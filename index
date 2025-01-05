@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Tabletop.js/1.5.4/tabletop.min.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', { packages: ['timeline'] });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      Tabletop.init({
+        key: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pubhtml',
+        simpleSheet: true,
+        callback: function(data) {
+          var container = document.getElementById('timeline');
+          var chart = new google.visualization.Timeline(container);
+          var dataTable = new google.visualization.DataTable();
+
+          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+          dataTable.addColumn({ type: 'string', id: 'Tipas' });
+          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+
+          data.forEach(function(row) {
+            dataTable.addRows([
+              [row['Darbuotojas'], 'Atostogos', new Date(row['Pradžios data']), new Date(row['Pabaigos data'])]
+            ]);
+          });
+
+          chart.draw(dataTable);
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>Atostogų grafikas</h1>
+  <div id="timeline" style="height: 500px;"></div>
+</body>
+</html>
