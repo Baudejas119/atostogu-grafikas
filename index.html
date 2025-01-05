@@ -6,51 +6,37 @@
     google.charts.load('current', { packages: ['timeline'] });
     google.charts.setOnLoadCallback(drawChart);
 
-function drawChart() {
-  var spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+    function drawChart() {
+      var spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
 
-  fetch(spreadsheetUrl)
-    .then(response => response.text())
-    .then(csvText => {
-      var data = new google.visualization.DataTable();
-      data.addColumn('string', 'Darbuotojas');
-      data.addColumn('date', 'Pradžia');
-      data.addColumn('date', 'Pabaiga');
+      fetch(spreadsheetUrl)
+        .then(response => response.text())
+        .then(csvText => {
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Darbuotojas');
+          data.addColumn('date', 'Pradžia');
+          data.addColumn('date', 'Pabaiga');
 
-      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-      rows.forEach(row => {
-        if (row[0] && row[1] && row[2]) { // Ignoruoti tuščias eilutes
-          data.addRow([
-            row[0],
-            new Date(row[1].trim()),
-            new Date(row[2].trim())
-          ]);
-        }
-      });
+          // Konvertuojame CSV eilutes į diagramos duomenis
+          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+          rows.forEach(row => {
+            if (row[0] && row[1] && row[2]) { // Tikriname, ar yra duomenų visuose stulpeliuose
+              data.addRow([
+                row[0], // Darbuotojas
+                new Date(row[1].trim()), // Pradžia
+                new Date(row[2].trim())  // Pabaiga
+              ]);
+            }
+          });
 
-      var container = document.getElementById('timeline');
-      var chart = new google.visualization.Timeline(container);
-      chart.draw(data);
-    })
-    .catch(error => {
-      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-    });
-}
-
-    function convertCsvToArray(csvText) {
-      const rows = csvText.split('\n').map(row => row.split(','));
-      const data = rows.slice(1).map(row => {
-        return [
-          row[0], // Darbuotojas
-          new Date(row[1].trim()), // Pradžia
-          new Date(row[2].trim())  // Pabaiga
-        ];
-      });
-    
-      return [['Darbuotojas', 'Pradžia', 'Pabaiga'], ...data];
-    }
-
-      return [['Darbuotojas', 'Pradžia', 'Pabaiga'], ...data];
+          // Sukuriame ir atvaizduojame diagramą
+          var container = document.getElementById('timeline');
+          var chart = new google.visualization.Timeline(container);
+          chart.draw(data);
+        })
+        .catch(error => {
+          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+        });
     }
   </script>
 </head>
