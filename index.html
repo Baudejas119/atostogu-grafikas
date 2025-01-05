@@ -1,4 +1,4 @@
-<!-- V1.3 -->
+<!-- V1.4 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,7 +44,7 @@
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
           data.addColumn({ type: 'string', role: 'style' }); // Stiliaus stulpelis
-          data.addColumn({ type: 'string', role: 'tooltip' }); // Pridedame tooltip
+          data.addColumn({ type: 'string', role: 'tooltip' }); // Tooltip
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           rows.forEach(row => {
@@ -55,7 +55,7 @@
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
                 const tooltip = `<b>${employee}</b><br>Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}`;
-                const style = `color: white; text-align: center; font-weight: bold;`; // Tekstas ant baro
+                const style = `color: white; text-align: center; font-weight: bold; background-color: #2196F3;`; // Spalva ir stilius barui
                 data.addRow([employee, startDate, endDate, style, tooltip]);
               }
             }
@@ -66,10 +66,10 @@
           const options = {
             timeline: {
               groupByRowLabel: true,
-              showBarLabels: true // Užtikrina, kad tekstas būtų rodomas ant barų
+              showRowLabels: true // Užtikrina, kad etiketės būtų rodomos
             },
             hAxis: {
-              format: 'MMM', // Rodo tik mėnesių pavadinimus
+              format: 'MMM', // Mėnesių pavadinimai
               textStyle: {
                 fontSize: 12,
                 bold: true
