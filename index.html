@@ -1,4 +1,4 @@
-<!-- V2.5 -->
+<!-- V2.6 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -62,9 +62,8 @@
 
                 const tooltip = `
                   <div style="padding:10px;font-family:Roboto;">
-                    <b>${employee}</b><br>
-                    Pradžia: ${startDate.toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric' })}<br>
-                    Pabaiga: ${endDate.toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric' })}<br>
+                    Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>
+                    Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>
                     Trukmė: ${duration} d.
                   </div>`;
 
