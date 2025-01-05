@@ -37,8 +37,19 @@
           var chart = new google.visualization.Timeline(container);
 
           var options = {
-            timeline: { colorByRowLabel: true },
-            colors: ['#1E90FF', '#FF6347', '#32CD32'] // Spalvos pagal poreikį
+            height: 600, // Aukštis pikseliais
+            width: 2000, // Fiksuotas plotis pikseliais (galima padidinti pagal poreikį)
+            timeline: { 
+              groupByRowLabel: true, // Grupuoja pagal darbuotoją
+            },
+            hAxis: {
+              format: 'MMM dd', // Formatas (pvz., „Saus 01“)
+              viewWindow: {
+                min: new Date(2025, 0, 1), // Rodo nuo Sausio 1 d.
+                max: new Date(2025, 11, 31) // Iki Gruodžio 31 d.
+              },
+              gridlines: { count: -1 } // Rodo visas dienas
+            }
           };
 
           chart.draw(data, options);
@@ -51,6 +62,6 @@
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
-  <div id="timeline" style="height: 500px;"></div>
+  <div id="timeline" style="height: 600px; overflow-x: scroll;"></div>
 </body>
 </html>
