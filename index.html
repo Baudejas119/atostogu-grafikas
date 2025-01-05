@@ -1,4 +1,4 @@
-<!-- V2.4 -->
+<!-- V2.5 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,6 +46,7 @@
           dataTable.addColumn({ type: 'string', id: 'Name' }); // Sub-label for bar
           dataTable.addColumn({ type: 'date', id: 'Pradžia' });
           dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+          dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } }); // Tooltip
 
           // Process rows from CSV
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
@@ -57,7 +58,17 @@
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
                 const shortName = employee.split(' ')[0]; // Extract first name
-                dataTable.addRow([employee, shortName, startDate, endDate]);
+                const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)); // Calculate duration in days
+
+                const tooltip = `
+                  <div style="padding:10px;font-family:Roboto;">
+                    <b>${employee}</b><br>
+                    Pradžia: ${startDate.toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric' })}<br>
+                    Pabaiga: ${endDate.toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric' })}<br>
+                    Trukmė: ${duration} d.
+                  </div>`;
+
+                dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
               }
             }
           });
@@ -75,7 +86,8 @@
                 fontSize: 12,
                 bold: true
               }
-            }
+            },
+            tooltip: { isHtml: true }
           };
 
           chart.draw(dataTable, options);
