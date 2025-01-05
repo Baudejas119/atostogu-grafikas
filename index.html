@@ -1,4 +1,4 @@
-<!-- V1.2 -->
+<!-- V1.3 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -43,7 +43,7 @@
           data.addColumn('string', 'Darbuotojas');
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
-          data.addColumn({ type: 'string', role: 'annotation' }); // Pridedame anotaciją
+          data.addColumn({ type: 'string', role: 'style' }); // Stiliaus stulpelis
           data.addColumn({ type: 'string', role: 'tooltip' }); // Pridedame tooltip
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
@@ -55,7 +55,8 @@
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
                 const tooltip = `<b>${employee}</b><br>Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}`;
-                data.addRow([employee, startDate, endDate, employee, tooltip]);
+                const style = `color: white; text-align: center; font-weight: bold;`; // Tekstas ant baro
+                data.addRow([employee, startDate, endDate, style, tooltip]);
               }
             }
           });
@@ -64,7 +65,8 @@
           const chart = new google.visualization.Timeline(container);
           const options = {
             timeline: {
-              groupByRowLabel: true
+              groupByRowLabel: true,
+              showBarLabels: true // Užtikrina, kad tekstas būtų rodomas ant barų
             },
             hAxis: {
               format: 'MMM', // Rodo tik mėnesių pavadinimus
