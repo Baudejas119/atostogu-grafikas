@@ -1,4 +1,4 @@
-<!-- V2.6 -->
+<!-- V2.7 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -58,13 +58,12 @@
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
                 const shortName = employee.split(' ')[0]; // Extract first name
-                const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)); // Calculate duration in days
+                const startFormatted = `${String(startDate.getMonth() + 1).padStart(2, '0')}.${String(startDate.getDate()).padStart(2, '0')}`;
+                const endFormatted = `${String(endDate.getMonth() + 1).padStart(2, '0')}.${String(endDate.getDate()).padStart(2, '0')}`;
 
                 const tooltip = `
                   <div style="padding:10px;font-family:Roboto;">
-                    Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>
-                    Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>
-                    Trukmė: ${duration} d.
+                    ${startFormatted} - ${endFormatted}
                   </div>`;
 
                 dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
