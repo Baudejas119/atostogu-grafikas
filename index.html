@@ -26,7 +26,7 @@
     #timeline {
       height: 500px;
       width: 90%;
-      overflow-x: scroll; /* Horizontalus slinkimas */
+      overflow-x: scroll;
     }
     #slider {
       width: 300px;
@@ -49,72 +49,75 @@
     let chart, data, options;
 
     function drawChart() {
-      const container = document.getElementById('timeline');
-      chart = new google.visualization.Timeline(container);
+      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
 
-      data = new google.visualization.DataTable();
-      data.addColumn('string', 'Darbuotojas');
-      data.addColumn('date', 'Pradžia');
-      data.addColumn('date', 'Pabaiga');
+      fetch(spreadsheetUrl)
+        .then(response => response.text())
+        .then(csvText => {
+          data = new google.visualization.DataTable();
+          data.addColumn('string', 'Darbuotojas');
+          data.addColumn('date', 'Pradžia');
+          data.addColumn('date', 'Pabaiga');
 
-      // Pavyzdiniai duomenys
-      data.addRows([
-        ['Jonas', new Date(2025, 0, 5), new Date(2025, 0, 15)],
-        ['Petras', new Date(2025, 0, 10), new Date(2025, 0, 20)],
-        ['Margarita', new Date(2025, 1, 1), new Date(2025, 1, 5)],
-        ['Edita', new Date(2025, 6, 15), new Date(2025, 6, 25)],
-      ]);
+          // Skaitome duomenis iš CSV
+          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+          rows.forEach(row => {
+            if (row.length === 3 && row[0] && row[1] && row[2]) {
+              data.addRow([
+                row[0].trim(),
+                new Date(row[1].trim()),
+                new Date(row[2].trim())
+              ]);
+            }
+          });
 
-      options = {
-        timeline: { groupByRowLabel: true },
-        hAxis: {
-          format: 'MMM dd',
-          viewWindow: {
-            min: new Date(2025, 0, 1),
-            max: new Date(2025, 1, 1) // Pradinis zoom intervalas (1 mėnuo)
-          },
-          textStyle: {
-            fontSize: 12,
-            bold: true
-          }
-        },
-        colors: ['#1E90FF', '#FF6347', '#32CD32', '#FFD700']
-      };
+          const container = document.getElementById('timeline');
+          chart = new google.visualization.Timeline(container);
 
-      chart.draw(data, options);
+          options = {
+            timeline: { groupByRowLabel: true },
+            hAxis: {
+              format: 'MMM dd',
+              viewWindow: {
+                min: new Date(2025, 0, 1),
+                max: new Date(2025, 1, 1)
+              },
+              textStyle: {
+                fontSize: 12,
+                bold: true
+              }
+            },
+            colors: ['#1E90FF', '#FF6347', '#32CD32', '#FFD700']
+          };
+
+          chart.draw(data, options);
+        })
+        .catch(error => {
+          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+        });
     }
 
     // Zoom funkcijos
     function zoomIn() {
-      const min = options.hAxis.viewWindow.min;
-      const max = options.hAxis.viewWindow.max;
-
-      min.setDate(min.getDate() + 5); // Priartina 5 dienomis
-      max.setDate(max.getDate() - 5);
-
+      options.hAxis.viewWindow.min.setDate(options.hAxis.viewWindow.min.getDate() + 5);
+      options.hAxis.viewWindow.max.setDate(options.hAxis.viewWindow.max.getDate() - 5);
       chart.draw(data, options);
     }
 
     function zoomOut() {
-      const min = options.hAxis.viewWindow.min;
-      const max = options.hAxis.viewWindow.max;
-
-      min.setDate(min.getDate() - 5); // Atitolina 5 dienomis
-      max.setDate(max.getDate() + 5);
-
+      options.hAxis.viewWindow.min.setDate(options.hAxis.viewWindow.min.getDate() - 5);
+      options.hAxis.viewWindow.max.setDate(options.hAxis.viewWindow.max.getDate() + 5);
       chart.draw(data, options);
     }
 
     // Slankiklio funkcija
     function adjustZoom(days) {
-      const min = new Date(2025, 0, 1); // Pradžios taškas
-      const max = new Date(min.getTime() + days * 24 * 60 * 60 * 1000); // Dienų skaičius nuo pradžios
-
+      const min = new Date(2025, 0, 1);
+      const max = new Date(min.getTime() + days * 24 * 60 * 60 * 1000);
       options.hAxis.viewWindow = {
         min: min,
         max: max
       };
-
       chart.draw(data, options);
     }
   </script>
