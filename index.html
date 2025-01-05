@@ -42,6 +42,7 @@
           data.addColumn('string', 'Darbuotojas');
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
+          data.addColumn({ type: 'string', role: 'annotation' }); // Pridedame anotaciją
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           rows.forEach(row => {
@@ -51,7 +52,7 @@
               const endDate = new Date(row[2].trim());
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
-                data.addRow([employee, startDate, endDate]);
+                data.addRow([employee, startDate, endDate, employee]); // Anotacija bus darbuotojo vardas
               }
             }
           });
