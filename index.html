@@ -1,3 +1,4 @@
+<!-- V1.2 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -62,7 +63,9 @@
           const container = document.getElementById('timeline');
           const chart = new google.visualization.Timeline(container);
           const options = {
-            timeline: { groupByRowLabel: true },
+            timeline: {
+              groupByRowLabel: true
+            },
             hAxis: {
               format: 'MMM', // Rodo tik mėnesių pavadinimus
               textStyle: {
