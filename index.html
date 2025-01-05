@@ -1,84 +1,122 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Pridedame Google Fonts nuorodą Roboto šriftui -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script type="text/javascript">
-    google.charts.load('current', { packages: ['timeline'], language: 'lt' });
-    google.charts.setOnLoadCallback(drawChart);
-
-    function drawChart() {
-      var spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
-
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          var data = new google.visualization.DataTable();
-          data.addColumn('string', 'Darbuotojas');
-          data.addColumn('date', 'Pradžia');
-          data.addColumn('date', 'Pabaiga');
-          data.addColumn({ type: 'string', role: 'tooltip' }); // Tooltip stulpelis
-
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          rows.forEach(row => {
-            if (row.length === 3 && row[0] && row[1] && row[2]) {
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-
-              if (!isNaN(startDate) && !isNaN(endDate)) {
-                const tooltipText = `Pradžia: ${startDate.toLocaleDateString('lt-LT')} 
-Pabaiga: ${endDate.toLocaleDateString('lt-LT')}`;
-                data.addRow([
-                  row[0].trim(),
-                  startDate,
-                  endDate,
-                  tooltipText
-                ]);
-              }
-            }
-          });
-
-          var container = document.getElementById('timeline');
-          var chart = new google.visualization.Timeline(container);
-
-          var options = {
-            timeline: { groupByRowLabel: true },
-            colors: ['#1E90FF', '#FF6347', '#32CD32'],
-            hAxis: {
-              format: 'MMM',
-              showTextEvery: 1,
-              textStyle: {
-                fontSize: 12,
-                bold: true
-              },
-              viewWindow: {
-                min: new Date(2025, 0, 1),
-                max: new Date(2025, 11, 31)
-              }
-            }
-          };
-
-          chart.draw(data, options);
-        })
-        .catch(error => {
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
-    }
-  </script>
   <style>
     body {
-      font-family: 'Roboto', sans-serif; /* Roboto šriftas visam puslapiui */
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     h1 {
-      font-family: 'Roboto', sans-serif;
-      font-weight: 700; /* Paryškintas Roboto šriftas pavadinimui */
+      font-weight: 700;
+    }
+    #controls {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #timeline {
+      height: 500px;
+      width: 90%;
+      overflow-x: scroll; /* Horizontalus slinkimas */
+    }
+    #slider {
+      width: 300px;
     }
   </style>
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
-  <div id="timeline" style="height: 600px; overflow-x: scroll;"></div>
+  <div id="controls">
+    <button onclick="zoomIn()">Priartinti</button>
+    <button onclick="zoomOut()">Atitolinti</button>
+    <input type="range" id="slider" min="10" max="365" value="30" oninput="adjustZoom(this.value)">
+  </div>
+  <div id="timeline"></div>
+
+  <script>
+    google.charts.load('current', { packages: ['timeline'], language: 'lt' });
+    google.charts.setOnLoadCallback(drawChart);
+
+    let chart, data, options;
+
+    function drawChart() {
+      const container = document.getElementById('timeline');
+      chart = new google.visualization.Timeline(container);
+
+      data = new google.visualization.DataTable();
+      data.addColumn('string', 'Darbuotojas');
+      data.addColumn('date', 'Pradžia');
+      data.addColumn('date', 'Pabaiga');
+
+      // Pavyzdiniai duomenys
+      data.addRows([
+        ['Jonas', new Date(2025, 0, 5), new Date(2025, 0, 15)],
+        ['Petras', new Date(2025, 0, 10), new Date(2025, 0, 20)],
+        ['Margarita', new Date(2025, 1, 1), new Date(2025, 1, 5)],
+        ['Edita', new Date(2025, 6, 15), new Date(2025, 6, 25)],
+      ]);
+
+      options = {
+        timeline: { groupByRowLabel: true },
+        hAxis: {
+          format: 'MMM dd',
+          viewWindow: {
+            min: new Date(2025, 0, 1),
+            max: new Date(2025, 1, 1) // Pradinis zoom intervalas (1 mėnuo)
+          },
+          textStyle: {
+            fontSize: 12,
+            bold: true
+          }
+        },
+        colors: ['#1E90FF', '#FF6347', '#32CD32', '#FFD700']
+      };
+
+      chart.draw(data, options);
+    }
+
+    // Zoom funkcijos
+    function zoomIn() {
+      const min = options.hAxis.viewWindow.min;
+      const max = options.hAxis.viewWindow.max;
+
+      min.setDate(min.getDate() + 5); // Priartina 5 dienomis
+      max.setDate(max.getDate() - 5);
+
+      chart.draw(data, options);
+    }
+
+    function zoomOut() {
+      const min = options.hAxis.viewWindow.min;
+      const max = options.hAxis.viewWindow.max;
+
+      min.setDate(min.getDate() - 5); // Atitolina 5 dienomis
+      max.setDate(max.getDate() + 5);
+
+      chart.draw(data, options);
+    }
+
+    // Slankiklio funkcija
+    function adjustZoom(days) {
+      const min = new Date(2025, 0, 1); // Pradžios taškas
+      const max = new Date(min.getTime() + days * 24 * 60 * 60 * 1000); // Dienų skaičius nuo pradžios
+
+      options.hAxis.viewWindow = {
+        min: min,
+        max: max
+      };
+
+      chart.draw(data, options);
+    }
+  </script>
 </body>
 </html>
