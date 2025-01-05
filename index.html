@@ -43,6 +43,7 @@
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
           data.addColumn({ type: 'string', role: 'annotation' }); // Pridedame anotaciją
+          data.addColumn({ type: 'string', role: 'tooltip' }); // Pridedame tooltip
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           rows.forEach(row => {
@@ -52,7 +53,8 @@
               const endDate = new Date(row[2].trim());
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
-                data.addRow([employee, startDate, endDate, employee]); // Anotacija bus darbuotojo vardas
+                const tooltip = `${employee}<br>Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}`;
+                data.addRow([employee, startDate, endDate, employee, tooltip]);
               }
             }
           });
@@ -67,7 +69,8 @@
                 fontSize: 12,
                 bold: true
               }
-            }
+            },
+            tooltip: { isHtml: true }
           };
 
           chart.draw(data, options);
