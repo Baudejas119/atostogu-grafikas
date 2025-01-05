@@ -17,29 +17,15 @@
     h1 {
       font-weight: 700;
     }
-    #controls {
-      margin: 10px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
     #timeline {
       height: 500px;
-      width: 90%;
-      overflow-x: scroll;
-    }
-    #slider {
-      width: 300px;
+      width: 100%;
+      overflow-x: auto;
     }
   </style>
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
-  <div id="controls">
-    <button onclick="zoomIn()">Priartinti</button>
-    <button onclick="zoomOut()">Atitolinti</button>
-    <input type="range" id="slider" min="10" max="365" value="30" oninput="adjustZoom(this.value)">
-  </div>
   <div id="timeline"></div>
 
   <script>
@@ -68,12 +54,11 @@
               const endDate = new Date(row[2].trim());
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
-                // Tikslus tooltip tekstas su lietuviška lokalizacija
+                // Tooltip formatas su mėnesiu ir diena
                 const tooltipText = `
                   <b>${row[0].trim()}</b><br>
-                  Pradžia: ${startDate.toLocaleDateString('lt-LT')}<br>
-                  Pabaiga: ${endDate.toLocaleDateString('lt-LT')}<br>
-                  Trukmė: ${Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))} dienos
+                  Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>
+                  Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}
                 `;
 
                 data.addRow([
@@ -92,13 +77,13 @@
           options = {
             timeline: { groupByRowLabel: true },
             hAxis: {
-              format: 'MMM dd',
+              format: 'MMM dd', // Mėnuo ir diena
               textStyle: {
                 fontSize: 12,
                 bold: true
               }
             },
-            tooltip: { isHtml: true } // Užtikrina HTML palaikymą tooltip
+            tooltip: { isHtml: true } // Tooltip su HTML palaikymu
           };
 
           chart.draw(data, options);
@@ -106,30 +91,6 @@
         .catch(error => {
           console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
         });
-    }
-
-    // Zoom funkcijos
-    function zoomIn() {
-      options.hAxis.viewWindow.min.setDate(options.hAxis.viewWindow.min.getDate() + 5);
-      options.hAxis.viewWindow.max.setDate(options.hAxis.viewWindow.max.getDate() - 5);
-      chart.draw(data, options);
-    }
-
-    function zoomOut() {
-      options.hAxis.viewWindow.min.setDate(options.hAxis.viewWindow.min.getDate() - 5);
-      options.hAxis.viewWindow.max.setDate(options.hAxis.viewWindow.max.getDate() + 5);
-      chart.draw(data, options);
-    }
-
-    // Slankiklio funkcija
-    function adjustZoom(days) {
-      const min = new Date(2025, 0, 1);
-      const max = new Date(min.getTime() + days * 24 * 60 * 60 * 1000);
-      options.hAxis.viewWindow = {
-        min: min,
-        max: max
-      };
-      chart.draw(data, options);
     }
   </script>
 </body>
