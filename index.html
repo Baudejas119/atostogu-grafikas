@@ -7,57 +7,53 @@
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
-      var spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+  var spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
 
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          var data = new google.visualization.DataTable();
-          data.addColumn('string', 'Darbuotojas');
-          data.addColumn('date', 'Pradžia');
-          data.addColumn('date', 'Pabaiga');
+  fetch(spreadsheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Darbuotojas');
+      data.addColumn('date', 'Pradžia');
+      data.addColumn('date', 'Pabaiga');
+      data.addColumn({ type: 'string', role: 'tooltip' }); // Tooltip stulpelis
 
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          rows.forEach(row => {
-            if (row.length === 3 && row[0] && row[1] && row[2]) {
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
+      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+      rows.forEach(row => {
+        if (row.length === 3 && row[0] && row[1] && row[2]) {
+          const startDate = new Date(row[1].trim());
+          const endDate = new Date(row[2].trim());
 
-              if (!isNaN(startDate) && !isNaN(endDate)) {
-                data.addRow([
-                  row[0].trim(),
-                  startDate,
-                  endDate
-                ]);
-              }
-            }
-          });
+          if (!isNaN(startDate) && !isNaN(endDate)) {
+            // Formatuojame tooltip tekstą
+            const tooltipText = `Pradžia: ${startDate.toLocaleDateString('lt-LT')} 
+Pabaiga: ${endDate.toLocaleDateString('lt-LT')}`;
+            
+            data.addRow([
+              row[0].trim(),
+              startDate,
+              endDate,
+              tooltipText // Pridedame tooltip tekstą
+            ]);
+          }
+        }
+      });
 
-          var container = document.getElementById('timeline');
-          var chart = new google.visualization.Timeline(container);
+      var container = document.getElementById('timeline');
+      var chart = new google.visualization.Timeline(container);
 
-          var options = {
-            height: 600, // Aukštis pikseliais
-            width: 2000, // Fiksuotas plotis pikseliais (galima padidinti pagal poreikį)
-            timeline: { 
-              groupByRowLabel: true, // Grupuoja pagal darbuotoją
-            },
-            hAxis: {
-              format: 'MMM dd', // Formatas (pvz., „Saus 01“)
-              viewWindow: {
-                min: new Date(2025, 0, 1), // Rodo nuo Sausio 1 d.
-                max: new Date(2025, 11, 31) // Iki Gruodžio 31 d.
-              },
-              gridlines: { count: -1 } // Rodo visas dienas
-            }
-          };
+      var options = {
+        timeline: { groupByRowLabel: true },
+        colors: ['#1E90FF', '#FF6347', '#32CD32'], // Pasirinktos spalvos
+      };
 
-          chart.draw(data, options);
-        })
-        .catch(error => {
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
-    }
+      chart.draw(data, options);
+    })
+    .catch(error => {
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
+
   </script>
 </head>
 <body>
