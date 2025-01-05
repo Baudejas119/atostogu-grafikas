@@ -17,19 +17,27 @@
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
 
-          // Konvertuojame CSV eilutes į diagramos duomenis
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           rows.forEach(row => {
-            if (row[0] && row[1] && row[2]) { // Tikriname, ar yra duomenų visuose stulpeliuose
-              data.addRow([
-                row[0], // Darbuotojas
-                new Date(row[1].trim()), // Pradžia
-                new Date(row[2].trim())  // Pabaiga
-              ]);
+            if (row.length === 3 && row[0] && row[1] && row[2]) {
+              const startDate = new Date(row[1].trim());
+              const endDate = new Date(row[2].trim());
+
+              if (!isNaN(startDate) && !isNaN(endDate)) {
+                console.log("Pridedama eilutė:", row[0].trim(), startDate, endDate);
+                data.addRow([
+                  row[0].trim(),
+                  startDate,
+                  endDate
+                ]);
+              } else {
+                console.warn("Netinkamos datos praleidžiamos:", row);
+              }
+            } else {
+              console.warn("Netinkama eilutė praleidžiama:", row);
             }
           });
 
-          // Sukuriame ir atvaizduojame diagramą
           var container = document.getElementById('timeline');
           var chart = new google.visualization.Timeline(container);
           chart.draw(data);
