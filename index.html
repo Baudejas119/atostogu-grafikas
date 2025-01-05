@@ -22,64 +22,28 @@
       width: 100%;
       overflow-x: auto;
     }
-    #loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .hidden {
-      display: none;
-    }
-    .visible {
-      display: block;
-    }
   </style>
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
-  <div id="loading" class="visible">Kraunasi...</div>
-  <div id="timeline" class="hidden"></div>
+  <div id="timeline"></div>
 
   <script>
     google.charts.load('current', { packages: ['timeline'], language: 'lt' });
     google.charts.setOnLoadCallback(drawChart);
 
-    let chart, data, options;
-
-    function updateVisibility(elementId, visible) {
-      const element = document.getElementById(elementId);
-      element.className = visible ? 'visible' : 'hidden';
-    }
-
     function drawChart() {
       const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
-
-      if (!spreadsheetUrl || !spreadsheetUrl.startsWith('https://')) {
-        console.error('Neteisingas arba trūkstamas spreadsheetUrl:', spreadsheetUrl);
-        document.getElementById('loading').textContent = 'Neteisingas duomenų URL.';
-        return;
-      }
 
       fetch(spreadsheetUrl)
         .then(response => response.text())
         .then(csvText => {
-          data = new google.visualization.DataTable();
+          const data = new google.visualization.DataTable();
           data.addColumn('string', 'Darbuotojas');
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
-          data.addColumn({ type: 'string', role: 'annotation' }); // Baro tekstas
 
-          // Skaitome duomenis iš CSV
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          if (rows.length === 0) {
-            console.warn('CSV failas yra tuščias arba nėra tinkamų duomenų.');
-            document.getElementById('loading').textContent = 'Nėra duomenų atvaizduoti.';
-            return;
-          }
-
           rows.forEach(row => {
             if (row.length >= 3) {
               const employee = row[0].trim();
@@ -87,39 +51,24 @@
               const endDate = new Date(row[2].trim());
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
-                const annotation = `${startDate.toLocaleDateString('lt-LT', { month: '2-digit', day: '2-digit' })}-${endDate.toLocaleDateString('lt-LT', { month: '2-digit', day: '2-digit' })}`;
-                data.addRow([employee, startDate, endDate, annotation]);
-              } else {
-                console.warn('Netinkami duomenys:', row);
+                data.addRow([employee, startDate, endDate]);
               }
-            } else {
-              console.warn('Nepakanka stulpelių eilutėje:', row);
             }
           });
 
           const container = document.getElementById('timeline');
-          chart = new google.visualization.Timeline(container);
-
-          options = {
-            timeline: { groupByRowLabel: true, showRowLabels: true },
+          const chart = new google.visualization.Timeline(container);
+          const options = {
+            timeline: { groupByRowLabel: true },
             hAxis: {
-              format: 'dd.MM', // Dienos ir mėnesiai
-              textStyle: {
-                fontSize: 12,
-                bold: true
-              }
-            },
-            tooltip: { isHtml: true }
+              format: 'dd.MM',
+            }
           };
-
-          updateVisibility('loading', false);
-          updateVisibility('timeline', true);
 
           chart.draw(data, options);
         })
         .catch(error => {
           console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-          document.getElementById('loading').textContent = 'Nepavyko užkrauti duomenų.';
         });
     }
   </script>
