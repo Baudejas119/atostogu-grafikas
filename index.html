@@ -26,17 +26,15 @@
 
     function convertCsvToArray(csvText) {
       const rows = csvText.split('\n').map(row => row.split(','));
-      const header = rows[0];
       const data = rows.slice(1).map(row => {
         return [
           row[0], // Darbuotojas
-          row[1], // Tipas
-          new Date(row[2]), // Pradžia
-          new Date(row[3])  // Pabaiga
+          new Date(row[1]), // Pradžia
+          new Date(row[2])  // Pabaiga
         ];
       });
 
-      return [header, ...data];
+      return [['Darbuotojas', 'Pradžia', 'Pabaiga'], ...data];
     }
   </script>
 </head>
