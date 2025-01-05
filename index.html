@@ -52,44 +52,50 @@
       const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
 
       fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          data = new google.visualization.DataTable();
-          data.addColumn('string', 'Darbuotojas');
-          data.addColumn('date', 'Pradžia');
-          data.addColumn('date', 'Pabaiga');
-
-          // Skaitome duomenis iš CSV
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          rows.forEach(row => {
-            if (row.length === 3 && row[0] && row[1] && row[2]) {
+       .then(csvText => {
+        data = new google.visualization.DataTable();
+        data.addColumn('string', 'Darbuotojas');
+        data.addColumn('date', 'Pradžia');
+        data.addColumn('date', 'Pabaiga');
+        data.addColumn({ type: 'string', role: 'tooltip' }); // Tooltip stulpelis
+      
+        // Skaitome duomenis iš CSV
+        const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+        rows.forEach(row => {
+          if (row.length === 3 && row[0] && row[1] && row[2]) {
+            const startDate = new Date(row[1].trim());
+            const endDate = new Date(row[2].trim());
+      
+            if (!isNaN(startDate) && !isNaN(endDate)) {
+              const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)); // Dienų trukmė
+              const tooltipText = `Pradžia: ${startDate.toLocaleDateString('lt-LT')} 
+      Pabaiga: ${endDate.toLocaleDateString('lt-LT')} 
+      Trukmė: ${duration} dienos`;
+      
               data.addRow([
                 row[0].trim(),
-                new Date(row[1].trim()),
-                new Date(row[2].trim())
+                startDate,
+                endDate,
+                tooltipText // Tikslus tooltip turinys
               ]);
             }
-          });
-
-          const container = document.getElementById('timeline');
-          chart = new google.visualization.Timeline(container);
-
-          options = {
-            timeline: { groupByRowLabel: true },
-            hAxis: {
-              format: 'MMM dd',
-              viewWindow: {
-                min: new Date(2025, 0, 1),
-                max: new Date(2025, 1, 1)
-              },
-              textStyle: {
-                fontSize: 12,
-                bold: true
-              }
-            },
-            colors: ['#1E90FF', '#FF6347', '#32CD32', '#FFD700']
-          };
-
+          }
+        });
+      
+        const container = document.getElementById('timeline');
+        chart = new google.visualization.Timeline(container);
+      
+        options = {
+          timeline: { groupByRowLabel: true },
+          hAxis: {
+            format: 'MMM dd',
+            textStyle: {
+              fontSize: 12,
+              bold: true
+            }
+          },
+          tooltip: { isHtml: true } // Užtikrina, kad tooltip veiktų su HTML
+        };
           chart.draw(data, options);
         })
         .catch(error => {
