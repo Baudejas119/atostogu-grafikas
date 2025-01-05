@@ -53,7 +53,7 @@
               const endDate = new Date(row[2].trim());
 
               if (!isNaN(startDate) && !isNaN(endDate)) {
-                const tooltip = `${employee}<br>Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}`;
+                const tooltip = `<b>${employee}</b><br>Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}`;
                 data.addRow([employee, startDate, endDate, employee, tooltip]);
               }
             }
