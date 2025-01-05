@@ -1,4 +1,4 @@
-<!-- V1.4 -->
+<!-- V2.1 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,59 +30,44 @@
   <div id="timeline"></div>
 
   <script>
-    google.charts.load('current', { packages: ['timeline'], language: 'lt' });
+    google.charts.load("current", { packages: ["timeline"] });
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
-      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+      const container = document.getElementById('timeline');
+      const chart = new google.visualization.Timeline(container);
+      const dataTable = new google.visualization.DataTable();
 
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          const data = new google.visualization.DataTable();
-          data.addColumn('string', 'Darbuotojas');
-          data.addColumn('date', 'Pradžia');
-          data.addColumn('date', 'Pabaiga');
-          data.addColumn({ type: 'string', role: 'style' }); // Stiliaus stulpelis
-          data.addColumn({ type: 'string', role: 'tooltip' }); // Tooltip
+      // Define columns
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Name' }); // Sub-label for bar
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          rows.forEach(row => {
-            if (row.length >= 3) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
+      // Define rows
+      dataTable.addRows([
+        ['Edita Lengvinienė', 'Edita', new Date(2025, 0, 15), new Date(2025, 0, 30)],
+        ['Asta Bukavickienė', 'Asta', new Date(2025, 1, 10), new Date(2025, 1, 25)],
+        ['Inesa Golubovskaja', 'Inesa', new Date(2025, 2, 1), new Date(2025, 2, 15)],
+        ['Aringas Vagonis', 'Aringas', new Date(2025, 3, 5), new Date(2025, 3, 20)],
+        ['Rasa Hage', 'Rasa', new Date(2025, 4, 10), new Date(2025, 4, 25)]
+      ]);
 
-              if (!isNaN(startDate) && !isNaN(endDate)) {
-                const tooltip = `<b>${employee}</b><br>Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}`;
-                const style = `color: white; text-align: center; font-weight: bold; background-color: #2196F3;`; // Spalva ir stilius barui
-                data.addRow([employee, startDate, endDate, style, tooltip]);
-              }
-            }
-          });
+      // Draw the chart
+      const options = {
+        timeline: {
+          groupByRowLabel: true
+        },
+        hAxis: {
+          format: 'MMM',
+          textStyle: {
+            fontSize: 12,
+            bold: true
+          }
+        }
+      };
 
-          const container = document.getElementById('timeline');
-          const chart = new google.visualization.Timeline(container);
-          const options = {
-            timeline: {
-              groupByRowLabel: true,
-              showRowLabels: true // Užtikrina, kad etiketės būtų rodomos
-            },
-            hAxis: {
-              format: 'MMM', // Mėnesių pavadinimai
-              textStyle: {
-                fontSize: 12,
-                bold: true
-              }
-            },
-            tooltip: { isHtml: true }
-          };
-
-          chart.draw(data, options);
-        })
-        .catch(error => {
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
+      chart.draw(dataTable, options);
     }
   </script>
 </body>
