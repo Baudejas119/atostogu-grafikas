@@ -22,11 +22,20 @@
       width: 100%;
       overflow-x: auto;
     }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
-  <div id="timeline"></div>
+  <div id="loading">Kraunasi...</div>
+  <div id="timeline" style="display: none;"></div>
 
   <script>
     google.charts.load('current', { packages: ['timeline'], language: 'lt' });
@@ -44,29 +53,21 @@
           data.addColumn('string', 'Darbuotojas');
           data.addColumn('date', 'Pradžia');
           data.addColumn('date', 'Pabaiga');
-          data.addColumn({ type: 'string', role: 'tooltip' }); // Tooltip stulpelis
+          data.addColumn({ type: 'string', role: 'style' }); // Spalvų stulpelis
+          data.addColumn({ type: 'string', role: 'annotation' }); // Baro tekstas
 
           // Skaitome duomenis iš CSV
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           rows.forEach(row => {
-            if (row.length === 3 && row[0] && row[1] && row[2]) {
+            if (row.length === 4) {
+              const employee = row[0].trim();
               const startDate = new Date(row[1].trim());
               const endDate = new Date(row[2].trim());
+              const color = row[3].trim();
 
-              if (!isNaN(startDate) && !isNaN(endDate)) {
-                // Tooltip formatas su mėnesiu ir diena
-                const tooltipText = `
-                  <b>${row[0].trim()}</b><br>
-                  Pradžia: ${startDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}<br>
-                  Pabaiga: ${endDate.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' })}
-                `;
-
-                data.addRow([
-                  row[0].trim(),
-                  startDate,
-                  endDate,
-                  tooltipText
-                ]);
+              if (!isNaN(startDate) && !isNaN(endDate) && /^#[0-9A-F]{6}$/i.test(color)) {
+                const annotation = `${startDate.toLocaleDateString('lt-LT', { month: '2-digit', day: '2-digit' })}-${endDate.toLocaleDateString('lt-LT', { month: '2-digit', day: '2-digit' })}`;
+                data.addRow([employee, startDate, endDate, color, annotation]);
               }
             }
           });
@@ -75,21 +76,25 @@
           chart = new google.visualization.Timeline(container);
 
           options = {
-            timeline: { groupByRowLabel: true },
+            timeline: { groupByRowLabel: true, showRowLabels: true },
             hAxis: {
-              format: 'MMM dd', // Mėnuo ir diena
+              format: 'dd.MM', // Dienos ir mėnesiai
               textStyle: {
                 fontSize: 12,
                 bold: true
               }
             },
-            tooltip: { isHtml: true } // Tooltip su HTML palaikymu
+            tooltip: { isHtml: true }
           };
+
+          document.getElementById('loading').style.display = 'none';
+          container.style.display = 'block';
 
           chart.draw(data, options);
         })
         .catch(error => {
           console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+          document.getElementById('loading').textContent = 'Nepavyko užkrauti duomenų.';
         });
     }
   </script>
