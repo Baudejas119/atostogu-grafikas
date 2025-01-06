@@ -32,7 +32,7 @@
     button:hover {
       background-color: #0056b3;
     }
-    #timeline {
+    #timeline, #calendar {
       width: 90%;
       max-width: 1200px;
       min-height: 500px;
@@ -64,12 +64,14 @@
     <button onclick="filterData(11)">Gruodis</button>
   </div>
   <div id="timeline"></div>
+  <div id="calendar"></div>
 
   <script type="text/javascript">
-    google.charts.load("current", { packages: ["timeline"], language: "lt" });
+    google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
     google.charts.setOnLoadCallback(loadData);
 
     let originalData = [];
+    let dailyCounts = [];
     let dataTable;
     let chart;
 
@@ -87,6 +89,7 @@
           dataTable.addColumn({ type: 'string', role: 'tooltip' });
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+          const allDates = {};
           rows.forEach(row => {
             if (row.length >= 4) {
               const employee = row[0].trim();
@@ -97,11 +100,20 @@
                 const shortName = employee.split(' ')[0];
                 dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
                 originalData.push([employee, shortName, startDate, endDate, tooltip]);
+
+                // Count daily occurrences for the calendar
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                  const dateKey = d.toISOString().split('T')[0];
+                  allDates[dateKey] = (allDates[dateKey] || 0) + 1;
+                }
               }
             }
           });
 
+          dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
+
           drawChart('all');
+          drawCalendar();
         })
         .catch(error => {
           document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
@@ -120,7 +132,12 @@
       filteredData.addColumn({ type: 'string', role: 'tooltip' });
 
       originalData.forEach(row => {
-        if (month === 'all' || row[2].getMonth() === month) {
+        const startDate = row[2];
+        const endDate = row[3];
+        if (
+          month === 'all' ||
+          (startDate.getMonth() <= month && endDate.getMonth() >= month)
+        ) {
           filteredData.addRow(row);
         }
       });
@@ -141,6 +158,26 @@
       };
 
       chart.draw(filteredData, options);
+    }
+
+    function drawCalendar() {
+      const calendar = new google.visualization.Calendar(document.getElementById('calendar'));
+      const calendarData = new google.visualization.DataTable();
+      calendarData.addColumn({ type: 'date', id: 'Date' });
+      calendarData.addColumn({ type: 'number', id: 'Count' });
+
+      calendarData.addRows(dailyCounts);
+
+      const options = {
+    title: "Atostogų Intensyvumas",
+    height: 350,
+    colorAxis: {
+        colors: ['#C1FF72', '#6AB20F', '#FCFF7F', '#FFBF00', '#FF8200', '#FF4500', '#A42C00']
+      }
+    };
+
+
+      calendar.draw(calendarData, options);
     }
 
     function filterData(month) {
