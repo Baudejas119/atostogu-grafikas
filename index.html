@@ -1,116 +1,69 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    h1 {
-      font-weight: 700;
-    }
-    #timeline {
-      width: 90%;
-      max-width: 1200px;
-      min-height: 500px;
-      margin: auto;
-      overflow-x: auto;
-    }
-    #loading {
-      font-size: 18px;
-      color: #555;
-      display: none;
-    }
-    .error-message {
-      color: red;
-      font-size: 16px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <h1>Atostogų grafikas</h1>
-  <div id="loading">Kraunama...</div>
-  <div id="timeline"></div>
+google.charts.load("current", { packages: ["timeline"], language: "lt" });
+google.charts.setOnLoadCallback(drawChart);
 
-  <script>
-    google.charts.load("current", { packages: ["timeline"] });
-    google.charts.setOnLoadCallback(drawChart);
+function drawChart() {
+  const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
 
-    function drawChart() {
-      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+  const loadingElement = document.getElementById('loading');
+  const timelineElement = document.getElementById('timeline');
 
-      const loadingElement = document.getElementById('loading');
-      const timelineElement = document.getElementById('timeline');
-      
-      loadingElement.style.display = 'block';
+  loadingElement.style.display = 'block';
 
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          loadingElement.style.display = 'none';
+  fetch(spreadsheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      loadingElement.style.display = 'none';
 
-          const dataTable = new google.visualization.DataTable();
+      const dataTable = new google.visualization.DataTable();
 
-          // Define columns
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Name' }); // Sub-label for bar
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-          dataTable.addColumn({ type: 'string', role: 'tooltip' }); // Default Tooltip
+      // Define columns
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Name' }); // Sub-label for bar
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+      dataTable.addColumn({ type: 'string', role: 'tooltip' }); // Default Tooltip
 
-          // Process rows from CSV
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          rows.forEach(row => {
-            if (row.length >= 4) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-              const tooltip = row[3].trim();
+      // Process rows from CSV
+      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+      rows.forEach(row => {
+        if (row.length >= 4) {
+          const employee = row[0].trim();
+          const startDate = new Date(row[1].trim());
+          const endDate = new Date(row[2].trim());
+          const tooltip = row[3].trim();
 
-              if (employee && !isNaN(startDate) && !isNaN(endDate)) {
-                const shortName = employee.split(' ')[0]; // Extract first name
-                dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
-              } else {
-                console.warn('Neteisingi duomenys eilutėje:', row);
-              }
-            }
-          });
+          if (employee && !isNaN(startDate) && !isNaN(endDate)) {
+            const shortName = employee.split(' ')[0]; // Extract first name
+            dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
+          } else {
+            console.warn('Neteisingi duomenys eilutėje:', row);
+          }
+        }
+      });
 
-          // Draw the chart
-          const chart = new google.visualization.Timeline(timelineElement);
-          const options = {
-            timeline: {
-              groupByRowLabel: true,
-              showRowLabels: true
-            },
-            hAxis: {
-              format: 'MMM dd',
-              textStyle: {
-                fontSize: 12,
-                bold: true
-              }
-            },
-            colors: ['#f57c00', '#039be5', '#d32f2f', '#388e3c'], // Custom colors
-            tooltip: { isHtml: true }
-          };
+      // Draw the chart
+      const chart = new google.visualization.Timeline(timelineElement);
+      const options = {
+        timeline: {
+          groupByRowLabel: true,
+          showRowLabels: true
+        },
+        hAxis: {
+          format: 'MMM dd',
+          textStyle: {
+            fontSize: 12,
+            bold: true
+          }
+        },
+        colors: ['#f57c00', '#039be5', '#d32f2f', '#388e3c'], // Custom colors
+        tooltip: { isHtml: true }
+      };
 
-          chart.draw(dataTable, options);
-        })
-        .catch(error => {
-          loadingElement.style.display = 'none';
-          timelineElement.innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
-    }
-  </script>
-</body>
-</html>
+      chart.draw(dataTable, options);
+    })
+    .catch(error => {
+      loadingElement.style.display = 'none';
+      timelineElement.innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
