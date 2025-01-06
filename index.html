@@ -1,4 +1,3 @@
-<!-- V2.9 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,14 +18,27 @@
       font-weight: 700;
     }
     #timeline {
-      height: 500px;
-      width: 100%;
+      width: 90%;
+      max-width: 1200px;
+      min-height: 500px;
+      margin: auto;
       overflow-x: auto;
+    }
+    #loading {
+      font-size: 18px;
+      color: #555;
+      display: none;
+    }
+    .error-message {
+      color: red;
+      font-size: 16px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
+  <div id="loading">Kraunama...</div>
   <div id="timeline"></div>
 
   <script>
@@ -36,9 +48,16 @@
     function drawChart() {
       const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
 
+      const loadingElement = document.getElementById('loading');
+      const timelineElement = document.getElementById('timeline');
+      
+      loadingElement.style.display = 'block';
+
       fetch(spreadsheetUrl)
         .then(response => response.text())
         .then(csvText => {
+          loadingElement.style.display = 'none';
+
           const dataTable = new google.visualization.DataTable();
 
           // Define columns
@@ -55,35 +74,40 @@
               const employee = row[0].trim();
               const startDate = new Date(row[1].trim());
               const endDate = new Date(row[2].trim());
-              const tooltip = row[3].trim(); // Tooltip from CSV
+              const tooltip = row[3].trim();
 
-              if (!isNaN(startDate) && !isNaN(endDate)) {
+              if (employee && !isNaN(startDate) && !isNaN(endDate)) {
                 const shortName = employee.split(' ')[0]; // Extract first name
                 dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
+              } else {
+                console.warn('Neteisingi duomenys eilutėje:', row);
               }
             }
           });
 
           // Draw the chart
-          const container = document.getElementById('timeline');
-          const chart = new google.visualization.Timeline(container);
+          const chart = new google.visualization.Timeline(timelineElement);
           const options = {
             timeline: {
-              groupByRowLabel: true
+              groupByRowLabel: true,
+              showRowLabels: true
             },
             hAxis: {
-              format: 'MMM',
+              format: 'MMM dd',
               textStyle: {
                 fontSize: 12,
                 bold: true
               }
             },
-            tooltip: { isHtml: false } // Default Tooltip
+            colors: ['#f57c00', '#039be5', '#d32f2f', '#388e3c'], // Custom colors
+            tooltip: { isHtml: true }
           };
 
           chart.draw(dataTable, options);
         })
         .catch(error => {
+          loadingElement.style.display = 'none';
+          timelineElement.innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
           console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
         });
     }
