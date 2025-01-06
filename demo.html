@@ -16,12 +16,31 @@
         dataTable.addColumn({ type: 'string', id: 'Task' }); // This will be displayed on the bar
         dataTable.addColumn({ type: 'date', id: 'Start' });
         dataTable.addColumn({ type: 'date', id: 'End' });
+        dataTable.addColumn({ type: 'string', role: 'tooltip' }); // Default Tooltip column
 
-        // Add rows
+        // Add rows with Tooltip
         dataTable.addRows([
-          ['Jonas', '2025-01-01 to 2025-01-10', new Date(2025, 0, 1), new Date(2025, 0, 10)],
-          ['Petras', '2025-01-15 to 2025-01-25', new Date(2025, 0, 15), new Date(2025, 0, 25)],
-          ['Indrė', '2025-02-01 to 2025-02-10', new Date(2025, 1, 1), new Date(2025, 1, 10)],
+          [
+            'Jonas', 
+            '2025-01-01 to 2025-01-10', 
+            new Date(2025, 0, 1), 
+            new Date(2025, 0, 10), 
+            'Jonas: Atostogos nuo 2025-01-01 iki 2025-01-10'
+          ],
+          [
+            'Petras', 
+            '2025-01-15 to 2025-01-25', 
+            new Date(2025, 0, 15), 
+            new Date(2025, 0, 25), 
+            'Petras: Projektas nuo 2025-01-15 iki 2025-01-25'
+          ],
+          [
+            'Indrė', 
+            '2025-02-01 to 2025-02-10', 
+            new Date(2025, 1, 1), 
+            new Date(2025, 1, 10), 
+            'Indrė: Konferencija nuo 2025-02-01 iki 2025-02-10'
+          ],
         ]);
 
         var options = {
@@ -29,7 +48,7 @@
             showRowLabels: true, // Display names
             showBarLabels: true, // Display dates on bars
           },
-          tooltip: { trigger: 'none' }, // Disable Tooltip
+          tooltip: { trigger: 'focus' }, // Default Tooltip
         };
 
         chart.draw(dataTable, options);
