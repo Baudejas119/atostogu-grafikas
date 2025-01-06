@@ -61,10 +61,9 @@
           const dataTable = new google.visualization.DataTable();
 
           // Define columns
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Name' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+          dataTable.addColumn('string', 'Darbuotojas');
+          dataTable.addColumn('date', 'Pradžia');
+          dataTable.addColumn('date', 'Pabaiga');
           dataTable.addColumn({ type: 'string', role: 'tooltip' });
 
           // Process rows from CSV
@@ -77,8 +76,7 @@
               const tooltip = row[3].trim();
 
               if (employee && !isNaN(startDate) && !isNaN(endDate)) {
-                const shortName = employee.split(' ')[0];
-                dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
+                dataTable.addRow([employee, startDate, endDate, tooltip]);
               } else {
                 console.warn('Neteisingi duomenys eilutėje:', row);
               }
@@ -88,9 +86,9 @@
           // Draw the chart
           const chart = new google.visualization.Timeline(timelineElement);
           const options = {
+            tooltip: { isHtml: true }, // Tooltip su HTML arba paprastu tekstu
             timeline: {
               groupByRowLabel: true,
-              showRowLabels: true
             },
             hAxis: {
               format: 'MMM dd',
@@ -99,8 +97,7 @@
                 bold: true
               }
             },
-            colors: ['#f57c00', '#039be5', '#d32f2f', '#388e3c'],
-            tooltip: { isHtml: true }
+            colors: ['#f57c00', '#039be5', '#d32f2f', '#388e3c']
           };
 
           chart.draw(dataTable, options);
