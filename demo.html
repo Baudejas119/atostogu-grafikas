@@ -3,18 +3,18 @@
   <head>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
-      google.charts.load('current', {'packages':['timeline']});
+      google.charts.load('current', { packages: ['timeline'] });
       google.charts.setOnLoadCallback(drawInitialChart);
 
       let data = {
         January: [
-          ['Jonas', '2025-01-01 to 2025-01-10', new Date(2025, 0, 1), new Date(2025, 0, 10), 'Jonas: Atostogos nuo 2025-01-01 iki 2025-01-10'],
-          ['Petras', '2025-01-15 to 2025-01-25', new Date(2025, 0, 15), new Date(2025, 0, 25), 'Petras: Projektas nuo 2025-01-15 iki 2025-01-25']
+          ['Jonas', '01-01 to 01-10', new Date(2025, 0, 1), new Date(2025, 0, 10), 'Jonas: Atostogos nuo 01-01 iki 01-10'],
+          ['Petras', '01-15 to 01-25', new Date(2025, 0, 15), new Date(2025, 0, 25), 'Petras: Projektas nuo 01-15 iki 01-25'],
         ],
         February: [
-          ['Indrė', '2025-02-01 to 2025-02-10', new Date(2025, 1, 1), new Date(2025, 1, 10), 'Indrė: Konferencija nuo 2025-02-01 iki 2025-02-10'],
-          ['Mantas', '2025-02-15 to 2025-02-20', new Date(2025, 1, 15), new Date(2025, 1, 20), 'Mantas: Atostogos nuo 2025-02-15 iki 2025-02-20']
-        ]
+          ['Indrė', '02-01 to 02-10', new Date(2025, 1, 1), new Date(2025, 1, 10), 'Indrė: Konferencija nuo 02-01 iki 02-10'],
+          ['Mantas', '02-15 to 02-20', new Date(2025, 1, 15), new Date(2025, 1, 20), 'Mantas: Atostogos nuo 02-15 iki 02-20'],
+        ],
       };
 
       function drawChart(month) {
@@ -36,6 +36,7 @@
           timeline: {
             showRowLabels: true,
             showBarLabels: true,
+            dateFormat: 'MM-dd', // Display month and day only
           },
           tooltip: { trigger: 'focus' },
         };
