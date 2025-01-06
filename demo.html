@@ -4,60 +4,36 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
       google.charts.load('current', { packages: ['timeline'] });
-      google.charts.setOnLoadCallback(drawInitialChart);
+      google.charts.setOnLoadCallback(drawChart);
 
-      let data = {
-        January: [
-          ['Jonas', '01-01 to 01-10', new Date(2025, 0, 1), new Date(2025, 0, 10), 'Jonas: Atostogos nuo 01-01 iki 01-10'],
-          ['Petras', '01-15 to 01-25', new Date(2025, 0, 15), new Date(2025, 0, 25), 'Petras: Projektas nuo 01-15 iki 01-25'],
-        ],
-        February: [
-          ['Indrė', '02-01 to 02-10', new Date(2025, 1, 1), new Date(2025, 1, 10), 'Indrė: Konferencija nuo 02-01 iki 02-10'],
-          ['Mantas', '02-15 to 02-20', new Date(2025, 1, 15), new Date(2025, 1, 20), 'Mantas: Atostogos nuo 02-15 iki 02-20'],
-        ],
-      };
-
-      function drawChart(month) {
+      function drawChart() {
         var container = document.getElementById('timeline');
         var chart = new google.visualization.Timeline(container);
         var dataTable = new google.visualization.DataTable();
 
-        // Add columns
-        dataTable.addColumn({ type: 'string', id: 'Specialist' });
+        dataTable.addColumn({ type: 'string', id: 'Employee' });
         dataTable.addColumn({ type: 'string', id: 'Task' });
-        dataTable.addColumn({ type: 'date', id: 'Start' });
-        dataTable.addColumn({ type: 'date', id: 'End' });
+        dataTable.addColumn({ type: 'date', id: 'Start Date' });
+        dataTable.addColumn({ type: 'date', id: 'End Date' });
         dataTable.addColumn({ type: 'string', role: 'tooltip' });
 
-        // Add rows for the selected month
-        dataTable.addRows(data[month]);
+        dataTable.addRows([
+          ['Edita Lengvinienė', 'Atostogos', new Date(2025, 1, 17), new Date(2025, 1, 21), '02.17 - 02.21'],
+          ['Edita Lengvinienė', 'Atostogos', new Date(2025, 5, 9), new Date(2025, 6, 4), '06.09 - 07.04'],
+          ['Asta Bukavickienė', 'Atostogos', new Date(2025, 1, 13), new Date(2025, 1, 16), '02.13 - 02.16'],
+          ['Asta Bukavickienė', 'Atostogos', new Date(2025, 6, 7), new Date(2025, 6, 31), '07.07 - 07.31'],
+          ['Asta Bukavickienė', 'Atostogos', new Date(2025, 11, 29), new Date(2025, 11, 31), '12.29 - 12.31']
+        ]);
 
         var options = {
-          timeline: {
-            showRowLabels: true,
-            showBarLabels: true,
-            dateFormat: 'MM-dd', // Display month and day only
-          },
-          tooltip: { trigger: 'focus' },
+          tooltip: { isHtml: true }
         };
 
         chart.draw(dataTable, options);
       }
-
-      function drawInitialChart() {
-        drawChart('January');
-      }
-
-      function showMonth(month) {
-        drawChart(month);
-      }
     </script>
   </head>
   <body>
-    <div>
-      <button onclick="showMonth('January')">Sausis</button>
-      <button onclick="showMonth('February')">Vasaris</button>
-    </div>
-    <div id="timeline" style="height: 400px;"></div>
+    <div id="timeline" style="height: 500px;"></div>
   </body>
 </html>
