@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['timeline']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var container = document.getElementById('timeline');
+        var chart = new google.visualization.Timeline(container);
+        var dataTable = new google.visualization.DataTable();
+
+        dataTable.addColumn({ type: 'string', id: 'Specialist' });
+        dataTable.addColumn({ type: 'string', id: 'Task' });
+        dataTable.addColumn({ type: 'date', id: 'Start' });
+        dataTable.addColumn({ type: 'date', id: 'End' });
+        dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } }); // Tooltip column
+
+        dataTable.addRows([
+          ['Jonas', 'Atostogos', new Date(2025, 0, 1), new Date(2025, 0, 10), '<div style="padding:10px;"><strong>Jonas</strong><br>Atostogos: Sausis 1–10</div>'],
+          ['Petras', 'Projektas', new Date(2025, 0, 15), new Date(2025, 0, 25), '<div style="padding:10px;"><strong>Petras</strong><br>Projektas: Sausis 15–25</div>']
+        ]);
+
+        var options = {
+          tooltip: { isHtml: true },
+        };
+
+        chart.draw(dataTable, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="timeline" style="height: 400px;"></div>
+  </body>
+</html>
