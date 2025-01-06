@@ -11,60 +11,19 @@
         var chart = new google.visualization.Timeline(container);
         var dataTable = new google.visualization.DataTable();
 
-        // Add columns
         dataTable.addColumn({ type: 'string', id: 'Specialist' });
         dataTable.addColumn({ type: 'string', id: 'Task' });
         dataTable.addColumn({ type: 'date', id: 'Start' });
         dataTable.addColumn({ type: 'date', id: 'End' });
-        dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } }); // Tooltip column
+        dataTable.addColumn({ type: 'string', role: 'tooltip' }); // Default Tooltip
 
-        // Add rows with different Tooltip styles
         dataTable.addRows([
-          [
-            'Jonas',
-            'Paprastas Tooltip',
-            new Date(2025, 0, 1),
-            new Date(2025, 0, 10),
-            '<div style="padding:10px;"><strong>Jonas</strong><br>Atostogos: Sausis 1–10</div>'
-          ],
-          [
-            'Petras',
-            'Tooltip su spalva',
-            new Date(2025, 0, 15),
-            new Date(2025, 0, 25),
-            '<div style="padding:10px; background-color: #d4edda; border: 1px solid #c3e6cb;">' +
-            '<strong style="color: green;">Petras</strong><br>' +
-            'Projektas: Sausis 15–25</div>'
-          ],
-          [
-            'Indrė',
-            'Tooltip su paveikslėliu',
-            new Date(2025, 1, 1),
-            new Date(2025, 1, 10),
-            '<div style="padding:10px; text-align:center;">' +
-            '<img src="https://via.placeholder.com/50" alt="Indrė" style="display:block; margin:auto;"><br>' +
-            '<strong>Indrė</strong><br>Konferencija: Vasaris 1–10</div>'
-          ],
-          [
-            'Aistė',
-            'Tooltip su ilgu tekstu',
-            new Date(2025, 1, 15),
-            new Date(2025, 1, 25),
-            '<div style="padding:10px;"><strong>Aistė</strong><br>' +
-            'Dalyvauja mokymuose: <em>"Psichiatrijos inovacijos ir ateitis"</em>. <br>' +
-            'Laukia daug intensyvių užsiėmimų ir įdomių pranešėjų.</div>'
-          ],
-          [
-            'Mantas',
-            'Tooltip su simboliais',
-            new Date(2025, 2, 1),
-            new Date(2025, 2, 10),
-            '<div style="padding:10px;">🎉 <strong>Mantas</strong><br>Gimtadienio atostogos!</div>'
-          ]
+          ['Jonas', 'Atostogos', new Date(2025, 0, 1), new Date(2025, 0, 10), 'Jonas: Atostogos Sausis 1–10'],
+          ['Petras', 'Projektas', new Date(2025, 0, 15), new Date(2025, 0, 25), 'Petras: Projektas Sausis 15–25']
         ]);
 
         var options = {
-          tooltip: { isHtml: true },
+          tooltip: { isHtml: false }, // Disable HTML Tooltips
           timeline: { colorByRowLabel: true },
         };
 
@@ -73,6 +32,6 @@
     </script>
   </head>
   <body>
-    <div id="timeline" style="height: 500px;"></div>
+    <div id="timeline" style="height: 400px;"></div>
   </body>
 </html>
