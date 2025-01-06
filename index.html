@@ -110,38 +110,46 @@
     }
 
     function drawChart(month) {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      const filteredData = new google.visualization.DataTable();
+  chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
+  const filteredData = new google.visualization.DataTable();
 
-      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', id: 'Name' });
-      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-      filteredData.addColumn({ type: 'string', role: 'tooltip' });
+  filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
+  filteredData.addColumn({ type: 'string', id: 'Name' });
+  filteredData.addColumn({ type: 'date', id: 'Pradžia' });
+  filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
+  filteredData.addColumn({ type: 'string', role: 'tooltip' });
 
-      originalData.forEach(row => {
-        if (month === 'all' || row[2].getMonth() === month) {
-          filteredData.addRow(row);
-        }
-      });
+  let hasData = false;
 
-      const options = {
-        timeline: {
-          groupByRowLabel: true,
-          showRowLabels: true
-        },
-        hAxis: {
-          format: 'MMM dd',
-          textStyle: {
-            fontSize: 12,
-            bold: true
-          }
-        },
-        tooltip: { isHtml: true }
-      };
-
-      chart.draw(filteredData, options);
+  originalData.forEach(row => {
+    if (month === 'all' || row[2].getMonth() === month) {
+      filteredData.addRow(row);
+      hasData = true;
     }
+  });
+
+  // Add a placeholder row if no data exists for the selected month
+  if (!hasData) {
+    filteredData.addRow(['', 'No Data', new Date(2025, month || 0, 1), new Date(2025, month || 0, 2), 'No data available']);
+  }
+
+  const options = {
+    timeline: {
+      groupByRowLabel: true,
+      showRowLabels: true
+    },
+    hAxis: {
+      format: 'MMM dd',
+      textStyle: {
+        fontSize: 12,
+        bold: true
+      }
+    },
+    tooltip: { isHtml: true }
+  };
+
+  chart.draw(filteredData, options);
+}
 
     function filterData(month) {
       drawChart(month);
