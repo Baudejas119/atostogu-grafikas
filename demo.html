@@ -132,7 +132,12 @@
       filteredData.addColumn({ type: 'string', role: 'tooltip' });
 
       originalData.forEach(row => {
-        if (month === 'all' || row[2].getMonth() === month) {
+        const startDate = row[2];
+        const endDate = row[3];
+        if (
+          month === 'all' ||
+          (startDate.getMonth() <= month && endDate.getMonth() >= month)
+        ) {
           filteredData.addRow(row);
         }
       });
@@ -166,7 +171,9 @@
       const options = {
         title: "Atostogų Intensyvumas",
         height: 350,
-        colorAxis: { colors: ['#ffffff', '#ff0000'] }
+        colorAxis: {
+          colors: ['#ffcccc', '#ff9999', '#ff6666', '#ff3333', '#ff0000', '#cc0000', '#990000', '#660000']
+        }
       };
 
       calendar.draw(calendarData, options);
