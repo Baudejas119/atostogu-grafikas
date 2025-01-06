@@ -1,4 +1,4 @@
-<!-- V2.8 -->
+<!-- V2.9 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,7 +46,7 @@
           dataTable.addColumn({ type: 'string', id: 'Name' }); // Sub-label for bar
           dataTable.addColumn({ type: 'date', id: 'Pradžia' });
           dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-          dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } }); // Tooltip
+          dataTable.addColumn({ type: 'string', role: 'tooltip' }); // Default Tooltip
 
           // Process rows from CSV
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
@@ -78,7 +78,7 @@
                 bold: true
               }
             },
-            tooltip: { isHtml: true }
+            tooltip: { isHtml: false } // Default Tooltip
           };
 
           chart.draw(dataTable, options);
