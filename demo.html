@@ -20,6 +20,23 @@
       margin: 20px 0;
       color: #333;
     }
+    #controls {
+      margin: 20px;
+      text-align: center;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
     #timeline, #calendar {
       width: 95%;
       max-width: 1200px;
@@ -48,6 +65,10 @@
         font-size: 24px;
         margin: 15px 0;
       }
+      button {
+        font-size: 12px;
+        padding: 8px 15px;
+      }
       #timeline, #calendar {
         min-height: 400px;
       }
@@ -56,6 +77,21 @@
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
+  <div id="controls">
+    <button onclick="filterData('all')">Metų apžvalga</button>
+    <button onclick="filterData(0)">Sausis</button>
+    <button onclick="filterData(1)">Vasaris</button>
+    <button onclick="filterData(2)">Kovas</button>
+    <button onclick="filterData(3)">Balandis</button>
+    <button onclick="filterData(4)">Gegužė</button>
+    <button onclick="filterData(5)">Birželis</button>
+    <button onclick="filterData(6)">Liepa</button>
+    <button onclick="filterData(7)">Rugpjūtis</button>
+    <button onclick="filterData(8)">Rugsėjis</button>
+    <button onclick="filterData(9)">Spalis</button>
+    <button onclick="filterData(10)">Lapkritis</button>
+    <button onclick="filterData(11)">Gruodis</button>
+  </div>
   <div id="timeline" class="loading-message">Duomenys įkelinami, prašome palaukti...</div>
   <div id="calendar"></div>
 
@@ -70,7 +106,7 @@
 
     function initializeCharts() {
       fetchData().then(() => {
-        drawTimelineChart();
+        drawTimelineChart('all');
         drawCalendarChart();
       }).catch(error => {
         showError("Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.");
@@ -115,7 +151,7 @@
       dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
     }
 
-    function drawTimelineChart() {
+    function drawTimelineChart(month) {
       if (!timelineChart) {
         timelineChart = new google.visualization.Timeline(document.getElementById('timeline'));
       }
@@ -126,7 +162,17 @@
       dataTable.addColumn({ type: 'date', id: 'Pradžia' });
       dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
       dataTable.addColumn({ type: 'string', role: 'tooltip' });
-      originalData.forEach(row => dataTable.addRow(row));
+
+      originalData.forEach(row => {
+        const startDate = row[2];
+        const endDate = row[3];
+        if (
+          month === 'all' ||
+          (startDate.getMonth() <= month && endDate.getMonth() >= month)
+        ) {
+          dataTable.addRow(row);
+        }
+      });
 
       const options = {
         timeline: {
@@ -168,6 +214,10 @@
       };
 
       calendarChart.draw(calendarData, options);
+    }
+
+    function filterData(month) {
+      drawTimelineChart(month);
     }
 
     function showError(message) {
