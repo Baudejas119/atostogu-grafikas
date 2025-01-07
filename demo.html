@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airtable Integration</title>
+    <title>Srautų Duomenys</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.2/axios.min.js"></script>
     <style>
         table {
@@ -34,13 +34,13 @@
     </table>
 
     <script>
+        // API nustatymai
         const apiKey = "pattNjMRsTl9TGPt6.301357586b7de7041e541a5d4a5bca9d04288f3e551f32d72d043485bc7ea666"; // Tavo tokenas
         const baseId = "appUuPAUb4QFwby16"; // Bazės ID
         const tableName = "Srautai"; // Lentelės pavadinimas
-        
         const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
 
-        // Funkcija gauti duomenis iš Airtable
+        // Funkcija gauti duomenis iš Airtable API
         async function fetchData() {
             try {
                 const response = await axios.get(url, {
@@ -48,25 +48,28 @@
                         Authorization: `Bearer ${apiKey}`
                     }
                 });
-                const records = response.data.records;
+                const records = response.data.records; // Gauti įrašai
+                console.log(records); // Patikrinimui, ką grąžina API
 
-                // Pridėti duomenis į HTML lentelę
+                // Įrašų atvaizdavimas lentelėje
                 const tbody = document.getElementById("data");
                 records.forEach(record => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${record.fields.Vardas || "N/A"}</td>
-                        <td>${record.fields.Atvykimas || "N/A"}</td>
-                        <td>${record.fields.Išvykimas || "N/A"}</td>
-                    `;
-                    tbody.appendChild(tr);
+                    if (record.fields.Vardas || record.fields.Atvykimas || record.fields.Išvykimas) {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${record.fields.Vardas || "N/A"}</td>
+                            <td>${record.fields.Atvykimas || "N/A"}</td>
+                            <td>${record.fields.Išvykimas || "N/A"}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
                 });
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         }
 
-        // Vykdoma funkcija
+        // Funkcijos iškvietimas
         fetchData();
     </script>
 </body>
