@@ -34,13 +34,11 @@
     </table>
 
     <script>
-        // API nustatymai
         const apiKey = "pattNjMRsTl9TGPt6.301357586b7de7041e541a5d4a5bca9d04288f3e551f32d72d043485bc7ea666"; // Tavo tokenas
         const baseId = "appUuPAUb4QFwby16"; // Bazės ID
         const tableName = "Srautai"; // Lentelės pavadinimas
         const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
 
-        // Funkcija gauti duomenis iš Airtable API
         async function fetchData() {
             try {
                 const response = await axios.get(url, {
@@ -49,11 +47,11 @@
                     }
                 });
                 const records = response.data.records; // Gauti įrašai
-                console.log(records); // Patikrinimui, ką grąžina API
+                console.log(records); // Patikrinimui
 
-                // Įrašų atvaizdavimas lentelėje
                 const tbody = document.getElementById("data");
                 records.forEach(record => {
+                    // Filtruojame tik tuos įrašus, kurie turi bent vieną reikšmę
                     if (record.fields.Vardas || record.fields.Atvykimas || record.fields.Išvykimas) {
                         const tr = document.createElement("tr");
                         tr.innerHTML = `
@@ -69,7 +67,6 @@
             }
         }
 
-        // Funkcijos iškvietimas
         fetchData();
     </script>
 </body>
