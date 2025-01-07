@@ -12,135 +12,121 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      background-color: #f9f9f9;
     }
     h1 {
       font-weight: 700;
-    }
-    #controls {
-      margin: 20px;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
+      text-align: center;
+      margin: 20px 0;
+      color: #333;
     }
     #timeline, #calendar {
-      width: 90%;
+      width: 95%;
       max-width: 1200px;
       min-height: 500px;
-      margin: auto;
+      margin: 20px auto;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       overflow-x: auto;
+    }
+    .loading-message {
+      font-size: 18px;
+      color: #555;
+      text-align: center;
+      margin: 20px 0;
     }
     .error-message {
       color: red;
       font-size: 16px;
       text-align: center;
+      margin: 20px 0;
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 24px;
+        margin: 15px 0;
+      }
+      #timeline, #calendar {
+        min-height: 400px;
+      }
     }
   </style>
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
-  <div id="controls">
-    <button onclick="filterData('all')">Metų apžvalga</button>
-    <button onclick="filterData(0)">Sausis</button>
-    <button onclick="filterData(1)">Vasaris</button>
-    <button onclick="filterData(2)">Kovas</button>
-    <button onclick="filterData(3)">Balandis</button>
-    <button onclick="filterData(4)">Gegužė</button>
-    <button onclick="filterData(5)">Birželis</button>
-    <button onclick="filterData(6)">Liepa</button>
-    <button onclick="filterData(7)">Rugpjūtis</button>
-    <button onclick="filterData(8)">Rugsėjis</button>
-    <button onclick="filterData(9)">Spalis</button>
-    <button onclick="filterData(10)">Lapkritis</button>
-    <button onclick="filterData(11)">Gruodis</button>
-  </div>
-  <div id="timeline"></div>
+  <div id="timeline" class="loading-message">Duomenys įkelinami, prašome palaukti...</div>
   <div id="calendar"></div>
 
   <script type="text/javascript">
     google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
-    google.charts.setOnLoadCallback(loadData);
+    google.charts.setOnLoadCallback(initializeCharts);
 
+    let timelineChart;
+    let calendarChart;
     let originalData = [];
     let dailyCounts = [];
-    let dataTable;
-    let chart;
 
-    function loadData() {
-      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
-
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Name' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-          dataTable.addColumn({ type: 'string', role: 'tooltip' });
-
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          const allDates = {};
-          rows.forEach(row => {
-            if (row.length >= 4) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-              const tooltip = row[3].trim();
-              if (employee && !isNaN(startDate) && !isNaN(endDate)) {
-                const shortName = employee.split(' ')[0];
-                dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
-                originalData.push([employee, shortName, startDate, endDate, tooltip]);
-
-                // Count daily occurrences for the calendar
-                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                  const dateKey = d.toISOString().split('T')[0];
-                  allDates[dateKey] = (allDates[dateKey] || 0) + 1;
-                }
-              }
-            }
-          });
-
-          dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
-
-          drawChart('all');
-          drawCalendar();
-        })
-        .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
+    function initializeCharts() {
+      fetchData().then(() => {
+        drawTimelineChart();
+        drawCalendarChart();
+      }).catch(error => {
+        showError("Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.");
+        console.error("Klaida:", error);
+      });
     }
 
-    function drawChart(month) {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      const filteredData = new google.visualization.DataTable();
+    async function fetchData() {
+      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+      const response = await fetch(spreadsheetUrl);
+      const csvText = await response.text();
 
-      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', id: 'Name' });
-      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-      filteredData.addColumn({ type: 'string', role: 'tooltip' });
+      const dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Name' });
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+      dataTable.addColumn({ type: 'string', role: 'tooltip' });
 
-      originalData.forEach(row => {
-        const startDate = row[2];
-        const endDate = row[3];
-        if (
-          month === 'all' ||
-          (startDate.getMonth() <= month && endDate.getMonth() >= month)
-        ) {
-          filteredData.addRow(row);
+      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+      const allDates = {};
+
+      rows.forEach(row => {
+        if (row.length >= 4) {
+          const employee = row[0].trim();
+          const startDate = new Date(row[1].trim());
+          const endDate = new Date(row[2].trim());
+          const tooltip = row[3].trim();
+          if (employee && !isNaN(startDate) && !isNaN(endDate)) {
+            const shortName = employee.split(' ')[0];
+            dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
+            originalData.push([employee, shortName, startDate, endDate, tooltip]);
+
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+              const dateKey = d.toISOString().split('T')[0];
+              allDates[dateKey] = (allDates[dateKey] || 0) + 1;
+            }
+          }
         }
       });
+
+      dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
+    }
+
+    function drawTimelineChart() {
+      if (!timelineChart) {
+        timelineChart = new google.visualization.Timeline(document.getElementById('timeline'));
+      }
+
+      const dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Name' });
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+      dataTable.addColumn({ type: 'string', role: 'tooltip' });
+      originalData.forEach(row => dataTable.addRow(row));
 
       const options = {
         timeline: {
@@ -157,31 +143,32 @@
         tooltip: { isHtml: true }
       };
 
-      chart.draw(filteredData, options);
+      timelineChart.draw(dataTable, options);
     }
 
-    function drawCalendar() {
-      const calendar = new google.visualization.Calendar(document.getElementById('calendar'));
+    function drawCalendarChart() {
+      if (!calendarChart) {
+        calendarChart = new google.visualization.Calendar(document.getElementById('calendar'));
+      }
+
       const calendarData = new google.visualization.DataTable();
       calendarData.addColumn({ type: 'date', id: 'Date' });
       calendarData.addColumn({ type: 'number', id: 'Count' });
-
       calendarData.addRows(dailyCounts);
 
       const options = {
-    title: "Atostogų Intensyvumas",
-    height: 350,
-    colorAxis: {
-        colors: ['#C1FF72', '#6AB20F', '#FCFF7F', '#FFBF00', '#FF8200', '#FF4500', '#A42C00']
-      }
-    };
+        title: "Atostogų Intensyvumas",
+        height: 350,
+        colorAxis: {
+          colors: ['#C1FF72', '#FF8200', '#FF4500']
+        }
+      };
 
-
-      calendar.draw(calendarData, options);
+      calendarChart.draw(calendarData, options);
     }
 
-    function filterData(month) {
-      drawChart(month);
+    function showError(message) {
+      document.getElementById('timeline').innerHTML = `<p class="error-message">${message}</p>`;
     }
   </script>
 </body>
