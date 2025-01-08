@@ -45,10 +45,10 @@
     </table>
 
     <script>
-        const apiKey = "pattNjMRsTl9TGPt6.301357586b7de7041e541a5d4a5bca9d04288f3e551f32d72d043485bc7ea666";
+        const apiKey = "pattNjMRsTl9TGPt6.a04570b54f36bd57e10c1d10bd280f0590bbb1e4b20aa8e8ced6da6f68c7c9c4";
         const baseId = "appUuPAUb4QFwby16";
-        const tableName = "Srautai";
-        const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
+        const tableId = "tbl0EGtQvyUDMah0Q";
+        const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
 
         async function fetchData() {
             try {
@@ -62,21 +62,19 @@
                 const tbody = document.getElementById("data");
                 tbody.innerHTML = ""; // Išvalome esamą lentelę
                 records.forEach(record => {
-                    if (record.fields.Vardas || record.fields.Atvykimas || record.fields.Išvykimas || record.fields.Grupė || record.fields.Data) {
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td contenteditable="true" data-id="${record.id}" data-field="Vardas">${record.fields.Vardas || "N/A"}</td>
-                            <td contenteditable="true" data-id="${record.id}" data-field="Atvykimas">${record.fields.Atvykimas || "N/A"}</td>
-                            <td contenteditable="true" data-id="${record.id}" data-field="Išvykimas">${record.fields.Išvykimas || "N/A"}</td>
-                            <td contenteditable="true" data-id="${record.id}" data-field="Grupė">${record.fields.Grupė || "N/A"}</td>
-                            <td contenteditable="true" data-id="${record.id}" data-field="Data">${record.fields.Data || "N/A"}</td>
-                            <td class="actions">
-                                <button onclick="updateRecord('${record.id}')">Išsaugoti</button>
-                                <button onclick="deleteRecord('${record.id}')">Ištrinti</button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td contenteditable="true" data-id="${record.id}" data-field="Vardas">${record.fields.Vardas || "N/A"}</td>
+                        <td contenteditable="true" data-id="${record.id}" data-field="Atvykimas">${record.fields.Atvykimas || "N/A"}</td>
+                        <td contenteditable="true" data-id="${record.id}" data-field="Išvykimas">${record.fields.Išvykimas || "N/A"}</td>
+                        <td contenteditable="true" data-id="${record.id}" data-field="Grupė">${record.fields.Grupė || "N/A"}</td>
+                        <td contenteditable="true" data-id="${record.id}" data-field="Data">${record.fields.Data || "N/A"}</td>
+                        <td class="actions">
+                            <button onclick="updateRecord('${record.id}')">Išsaugoti</button>
+                            <button onclick="deleteRecord('${record.id}')">Ištrinti</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
                 });
             } catch (error) {
                 console.error("Error fetching data:", error);
