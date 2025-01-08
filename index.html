@@ -59,7 +59,9 @@
       <option value="PDS">PDS</option>
       <option value="Krizes">Krizės</option>
       <option value="Poumis">Poūmis</option>
-      <option value="Umus">UPS</option>
+      <option value="UmusII">Ūumus II</option>
+      <option value="UmusIII">Ūumus III</option>
+      <option value="Geronto">Geronto</option>
     </select>
   </div>
   <div id="controls">
@@ -94,7 +96,9 @@
       PDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1629487051&single=true&output=csv',
       Krizes: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1394934574&single=true&output=csv',
       Poumis: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&single=true&output=csv',
-      Umus: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&single=true&output=csv'
+      UmusII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&single=true&output=csv',
+      UmusIII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&single=true&output=csv',
+      Geronto: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&single=true&output=csv'
     };
 
     function changeSection(section) {
@@ -126,7 +130,6 @@
               const startDate = new Date(row[1].trim());
               const endDate = new Date(row[2].trim());
               if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                const shortName = employee.split(' ')[0];
                 dataTable.addRow([employee, startDate, endDate]);
                 originalData.push([employee, startDate, endDate]);
 
@@ -201,23 +204,14 @@
         title: "Atostogų Intensyvumas",
         height: 350,
         colorAxis: {
-  minValue: 0,
-  maxValue: 10,
-  values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  colors: [
-    '#FFE5B4', // 0 - šviesiai geltona
-    '#FFD59E', // 1
-    '#FFB86C', // 2
-    '#FF8C42', // 3
-    '#FF7000', // 4
-    '#FF3C00', // 5
-    '#CC2900', // 6
-    '#992000', // 7
-    '#7A1800', // 8
-    '#4D0F00', // 9
-    '#2E0C00'  // 10 - tamsiai juoda
-  ]
-},
+          minValue: 0,
+          maxValue: 10,
+          values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          colors: [
+            '#FFE5B4', '#FFD59E', '#FFB86C', '#FF8C42', '#FF7000',
+            '#FF3C00', '#CC2900', '#992000', '#7A1800', '#4D0F00', '#2E0C00'
+          ]
+        },
         calendar: {
           cellSize: 15,
           yearLabel: { fontSize: 14 },
