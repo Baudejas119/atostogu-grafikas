@@ -128,15 +128,17 @@
               const startDate = new Date(row[1].trim());
               const endDate = new Date(row[2].trim());
               const tooltip = row[3].trim();
-              if (employee && !isNaN(startDate) && !isNaN(endDate)) {
+              if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
                 const shortName = employee.split(' ')[0];
                 dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
                 originalData.push([employee, shortName, startDate, endDate, tooltip]);
-
+          
                 for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                   const dateKey = d.toISOString().split('T')[0];
                   allDates[dateKey] = (allDates[dateKey] || 0) + 1;
                 }
+              } else {
+                console.warn(`Invalid row skipped: ${row}`);
               }
             }
           });
