@@ -18,6 +18,14 @@
             background-color: #f2f2f2;
             text-align: left;
         }
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        .actions button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -28,15 +36,18 @@
                 <th>Vardas</th>
                 <th>Atvykimas</th>
                 <th>Išvykimas</th>
+                <th>Grupė</th>
+                <th>Data</th>
+                <th>Veiksmai</th>
             </tr>
         </thead>
         <tbody id="data"></tbody>
     </table>
 
     <script>
-        const apiKey = "pattNjMRsTl9TGPt6.301357586b7de7041e541a5d4a5bca9d04288f3e551f32d72d043485bc7ea666"; // Tavo tokenas
-        const baseId = "appUuPAUb4QFwby16"; // Bazės ID
-        const tableName = "Srautai"; // Lentelės pavadinimas
+        const apiKey = "pattNjMRsTl9TGPt6.301357586b7de7041e541a5d4a5bca9d04288f3e551f32d72d043485bc7ea666";
+        const baseId = "appUuPAUb4QFwby16";
+        const tableName = "Srautai";
         const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
 
         async function fetchData() {
@@ -46,24 +57,64 @@
                         Authorization: `Bearer ${apiKey}`
                     }
                 });
-                const records = response.data.records; // Gauti įrašai
-                console.log(records); // Patikrinimui
+                const records = response.data.records;
 
                 const tbody = document.getElementById("data");
+                tbody.innerHTML = ""; // Išvalome esamą lentelę
                 records.forEach(record => {
-                    // Filtruojame tik tuos įrašus, kurie turi bent vieną reikšmę
-                    if (record.fields.Vardas || record.fields.Atvykimas || record.fields.Išvykimas) {
+                    if (record.fields.Vardas || record.fields.Atvykimas || record.fields.Išvykimas || record.fields.Grupė || record.fields.Data) {
                         const tr = document.createElement("tr");
                         tr.innerHTML = `
-                            <td>${record.fields.Vardas || "N/A"}</td>
-                            <td>${record.fields.Atvykimas || "N/A"}</td>
-                            <td>${record.fields.Išvykimas || "N/A"}</td>
+                            <td contenteditable="true" data-id="${record.id}" data-field="Vardas">${record.fields.Vardas || "N/A"}</td>
+                            <td contenteditable="true" data-id="${record.id}" data-field="Atvykimas">${record.fields.Atvykimas || "N/A"}</td>
+                            <td contenteditable="true" data-id="${record.id}" data-field="Išvykimas">${record.fields.Išvykimas || "N/A"}</td>
+                            <td contenteditable="true" data-id="${record.id}" data-field="Grupė">${record.fields.Grupė || "N/A"}</td>
+                            <td contenteditable="true" data-id="${record.id}" data-field="Data">${record.fields.Data || "N/A"}</td>
+                            <td class="actions">
+                                <button onclick="updateRecord('${record.id}')">Išsaugoti</button>
+                                <button onclick="deleteRecord('${record.id}')">Ištrinti</button>
+                            </td>
                         `;
                         tbody.appendChild(tr);
                     }
                 });
             } catch (error) {
                 console.error("Error fetching data:", error);
+            }
+        }
+
+        async function updateRecord(id) {
+            try {
+                const row = document.querySelectorAll(`[data-id='${id}']`);
+                const fields = Array.from(row).reduce((acc, cell) => {
+                    acc[cell.dataset.field] = cell.textContent.trim();
+                    return acc;
+                }, {});
+
+                await axios.patch(`${url}/${id}`, { fields }, {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                alert("Įrašas sėkmingai atnaujintas!");
+                fetchData(); // Perkrauname duomenis
+            } catch (error) {
+                console.error("Error updating record:", error);
+            }
+        }
+
+        async function deleteRecord(id) {
+            try {
+                await axios.delete(`${url}/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`
+                    }
+                });
+                alert("Įrašas sėkmingai ištrintas!");
+                fetchData(); // Perkrauname duomenis
+            } catch (error) {
+                console.error("Error deleting record:", error);
             }
         }
 
