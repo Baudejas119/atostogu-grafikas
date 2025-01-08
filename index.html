@@ -201,11 +201,23 @@
         title: "Atostogų Intensyvumas",
         height: 350,
         colorAxis: {
-          minValue: 0,
-          maxValue: Math.max(...dailyCounts.map(d => d[1])),
-          values: [0, 1, 3, 5, 7, 10],
-          colors: ['#C1FF72', '#6AB20F', '#FCFF7F', '#FFBF00', '#FF8200', '#FF4500']
-        },
+  minValue: 0,
+  maxValue: 10,
+  values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  colors: [
+    '#FFE5B4', // 0 - šviesiai geltona
+    '#FFD59E', // 1
+    '#FFB86C', // 2
+    '#FF8C42', // 3
+    '#FF7000', // 4
+    '#FF3C00', // 5
+    '#CC2900', // 6
+    '#992000', // 7
+    '#7A1800', // 8
+    '#4D0F00', // 9
+    '#2E0C00'  // 10 - tamsiai juoda
+  ]
+},
         calendar: {
           cellSize: 15,
           yearLabel: { fontSize: 14 },
