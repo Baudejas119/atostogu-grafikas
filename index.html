@@ -57,9 +57,9 @@
     <select id="section-select" onchange="changeSection(this.value)">
       <option value="PTDS">PTDS</option>
       <option value="PDS">PDS</option>
-      <option value="Krizes">Krizes</option>
-      <option value="Poumis">Pošmis</option>
-      <option value="Umus">Ūumus</option>
+      <option value="Krizes">Krizės</option>
+      <option value="Poumis">Poūmis</option>
+      <option value="Umus">UPS</option>
     </select>
   </div>
   <div id="controls">
@@ -113,26 +113,23 @@
         .then(csvText => {
           dataTable = new google.visualization.DataTable();
           dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Name' });
           dataTable.addColumn({ type: 'date', id: 'Pradžia' });
           dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-          dataTable.addColumn({ type: 'string', role: 'tooltip' });
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           const allDates = {};
           originalData = [];
 
           rows.forEach(row => {
-            if (row.length >= 4) {
+            if (row.length >= 3) {
               const employee = row[0].trim();
               const startDate = new Date(row[1].trim());
               const endDate = new Date(row[2].trim());
-              const tooltip = row[3].trim();
               if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
                 const shortName = employee.split(' ')[0];
-                dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
-                originalData.push([employee, shortName, startDate, endDate, tooltip]);
-          
+                dataTable.addRow([employee, startDate, endDate]);
+                originalData.push([employee, startDate, endDate]);
+
                 for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                   const dateKey = d.toISOString().split('T')[0];
                   allDates[dateKey] = (allDates[dateKey] || 0) + 1;
@@ -142,7 +139,6 @@
               }
             }
           });
-          ;
 
           dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
 
@@ -160,14 +156,12 @@
       const filteredData = new google.visualization.DataTable();
 
       filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', id: 'Name' });
       filteredData.addColumn({ type: 'date', id: 'Pradžia' });
       filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-      filteredData.addColumn({ type: 'string', role: 'tooltip' });
 
       originalData.forEach(row => {
-        const startDate = row[2];
-        const endDate = row[3];
+        const startDate = row[1];
+        const endDate = row[2];
         if (
           month === 'all' ||
           (startDate.getMonth() <= month && endDate.getMonth() >= month)
