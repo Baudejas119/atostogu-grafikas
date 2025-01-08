@@ -16,10 +16,10 @@
     h1 {
       font-weight: 700;
     }
-    #controls {
+    #controls, #section-controls {
       margin: 20px;
     }
-    button {
+    button, select {
       margin: 5px;
       padding: 10px 20px;
       font-size: 16px;
@@ -29,19 +29,19 @@
       color: white;
       cursor: pointer;
     }
-    button:hover {
+    button:hover, select:hover {
       background-color: #0056b3;
     }
     #timeline, #calendar {
       width: 90%;
       max-width: 1200px;
       min-height: 500px;
-      margin: 20px auto; /* Atstumas tarp diagramų */
-      padding: 10px; /* Tarpo vidus */
-      background-color: #fff; /* Baltas fonas */
-      border: 1px solid #ddd; /* Šviesus rėmelis */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Šiek tiek šešėlio */
-      border-radius: 8px; /* Kampų užapvalinimas */
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
     }
     .error-message {
       color: red;
@@ -52,6 +52,16 @@
 </head>
 <body>
   <h1>Atostogų grafikas</h1>
+  <div id="section-controls">
+    <label for="section-select">Pasirinkite skyrių:</label>
+    <select id="section-select" onchange="changeSection(this.value)">
+      <option value="PTDS">PTDS</option>
+      <option value="PDS">PDS</option>
+      <option value="Krizes">Krizes</option>
+      <option value="Poumis">Pošmis</option>
+      <option value="Umus">Ūumus</option>
+    </select>
+  </div>
   <div id="controls">
     <button onclick="filterData('all')">Metų apžvalga</button>
     <button onclick="filterData(0)">Sausis</button>
@@ -72,16 +82,32 @@
 
   <script type="text/javascript">
     google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
-    google.charts.setOnLoadCallback(loadData);
+    google.charts.setOnLoadCallback(() => loadData('PTDS'));
 
     let originalData = [];
     let dailyCounts = [];
     let dataTable;
     let chart;
 
-    function loadData() {
-      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+    const sectionUrls = {
+      PTDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vPTDS/pub?output=csv',
+      PDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vPDS/pub?output=csv',
+      Krizes: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vKrizes/pub?output=csv',
+      Poumis: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vPoumis/pub?output=csv',
+      Umus: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vUmus/pub?output=csv'
+    };
 
+    function changeSection(section) {
+      const selectedUrl = sectionUrls[section];
+      if (selectedUrl) {
+        loadData(section);
+      } else {
+        console.error('Nepavyko rasti skyriaus duomenų.');
+      }
+    }
+
+    function loadData(section) {
+      const spreadsheetUrl = sectionUrls[section];
       fetch(spreadsheetUrl)
         .then(response => response.text())
         .then(csvText => {
@@ -94,6 +120,8 @@
 
           const rows = csvText.split('\n').slice(1).map(row => row.split(','));
           const allDates = {};
+          originalData = [];
+
           rows.forEach(row => {
             if (row.length >= 4) {
               const employee = row[0].trim();
@@ -105,7 +133,6 @@
                 dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
                 originalData.push([employee, shortName, startDate, endDate, tooltip]);
 
-                // Count daily occurrences for the calendar
                 for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                   const dateKey = d.toISOString().split('T')[0];
                   allDates[dateKey] = (allDates[dateKey] || 0) + 1;
