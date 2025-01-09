@@ -59,8 +59,8 @@
       <option value="PDS">PDS</option>
       <option value="Krizes">Krizės</option>
       <option value="Poumis">Poūmis</option>
-      <option value="UmusII">Ūumus II</option>
-      <option value="UmusIII">Ūumus III</option>
+      <option value="UmusII">Ūmus II</option>
+      <option value="UmusIII">Ūmus III</option>
       <option value="Geronto">Geronto</option>
     </select>
   </div>
@@ -111,78 +111,92 @@
     }
 
     function loadData(section) {
-      const spreadsheetUrl = sectionUrls[section];
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } }); // ToolTip stulpelis
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+  const spreadsheetUrl = sectionUrls[section];
+  fetch(spreadsheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' }); // Naujas stulpelis etiketėms
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          originalData = [];
+      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+      const allDates = {};
+      originalData = [];
 
-          rows.forEach(row => {
-            if (row.length >= 3) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-              if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
-                const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
-                const tooltip = `<b>${startLabel}-${endLabel}</b><br>${employee}`;
+      rows.forEach(row => {
+        if (row.length >= 3) {
+          const employee = row[0].trim();
+          const startDate = new Date(row[1].trim());
+          const endDate = new Date(row[2].trim());
+          if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
+            const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
+            const periodLabel = `${startLabel}-${endLabel}`;
+            dataTable.addRow([employee, periodLabel, startDate, endDate]);
+            originalData.push([employee, periodLabel, startDate, endDate]);
 
-                dataTable.addRow([employee, tooltip, startDate, endDate]); // Juostos su vardais tik logikai
-                originalData.push([employee, tooltip, startDate, endDate]);
-              } else {
-                console.warn(`Invalid row skipped: ${row}`);
-              }
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+              const dateKey = d.toISOString().split('T')[0];
+              allDates[dateKey] = (allDates[dateKey] || 0) + 1;
             }
-          });
-
-          drawChart('all');
-          drawCalendar();
-        })
-        .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
-    }
-
-    function drawChart(month) {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      const filteredData = new google.visualization.DataTable();
-
-      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
-      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-
-      originalData.forEach(row => {
-        const startDate = row[2];
-        const endDate = row[3];
-        if (
-          month === 'all' ||
-          (startDate.getMonth() <= month && endDate.getMonth() >= month)
-        ) {
-          filteredData.addRow(row);
+          } else {
+            console.warn(`Invalid row skipped: ${row}`);
+          }
         }
       });
 
-      const options = {
-        height: Math.min(originalData.length * 50, 600),
-        timeline: {
-          groupByRowLabel: true,
-          showRowLabels: true,
-          colorByRowLabel: true
-        },
-        tooltip: { isHtml: true }
-      };
+      dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
 
-      chart.draw(filteredData, options);
+      drawChart('all');
+      drawCalendar();
+    })
+    .catch(error => {
+      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
+
+function drawChart(month) {
+  chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
+  const filteredData = new google.visualization.DataTable();
+
+  filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
+  filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' }); // Naujas stulpelis etiketėms
+  filteredData.addColumn({ type: 'date', id: 'Pradžia' });
+  filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
+
+  originalData.forEach(row => {
+    const startDate = row[2];
+    const endDate = row[3];
+    if (
+      month === 'all' ||
+      (startDate.getMonth() <= month && endDate.getMonth() >= month)
+    ) {
+      filteredData.addRow(row);
     }
+  });
+
+  const options = {
+    height: Math.min(originalData.length * 50, 600),
+    timeline: {
+      groupByRowLabel: true,
+      showRowLabels: true,
+      colorByRowLabel: true // Užtikrina, kad kiekvienas darbuotojas turėtų atskirą spalvą
+    },
+    hAxis: {
+      format: 'MMM dd',
+      textStyle: {
+        fontSize: 12,
+        bold: true
+      }
+    },
+    tooltip: { isHtml: true }
+  };
+
+  chart.draw(filteredData, options);
+}
 
     function drawCalendar() {
       const calendar = new google.visualization.Calendar(document.getElementById('calendar'));
