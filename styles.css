@@ -1,0 +1,43 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+h1 {
+  font-weight: 700;
+}
+#controls, #section-controls {
+  margin: 20px;
+}
+button, select {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+button:hover, select:hover {
+  background-color: #0056b3;
+}
+#timeline, #calendar {
+  width: 90%;
+  max-width: 1200px;
+  min-height: 500px;
+  margin: 20px auto;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+.error-message {
+  color: red;
+  font-size: 16px;
+  text-align: center;
+}
