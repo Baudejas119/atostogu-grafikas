@@ -62,6 +62,7 @@
       <option value="UmusII">Ūmus II</option>
       <option value="UmusIII">Ūmus III</option>
       <option value="Geronto">Geronto</option>
+      <option value="TerapinisSkyrius">Terapinis skyrius</option>
     </select>
   </div>
   <div id="controls">
@@ -98,7 +99,21 @@
       Poumis: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&single=true&output=csv',
       UmusII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&single=true&output=csv',
       UmusIII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&single=true&output=csv',
-      Geronto: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&single=true&output=csv'
+      Geronto: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&single=true&output=csv',
+      TerapinisSkyrius: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=490659936&single=true&output=csv'
+    };
+
+    const roleColors = {
+      "Vadovas": "#FF5733",
+      "Psichologė vaikų": "#33FF57",
+      "Psichologė": "#3357FF",
+      "Psichologė - psichoterapeutė": "#FF33A6",
+      "Ergoterapeutas": "#FFD700",
+      "Meno terapeutė": "#8A2BE2",
+      "Muzikė": "#FF4500",
+      "Vyr. soc. darbuotoja": "#00CED1",
+      "Socialinė darbuotoja": "#8B4513",
+      "Individualios priežiūros darbuotojas": "#7FFF00"
     };
 
     function changeSection(section) {
@@ -111,127 +126,71 @@
     }
 
     function loadData(section) {
-  const spreadsheetUrl = sectionUrls[section];
-  fetch(spreadsheetUrl)
-    .then(response => response.text())
-    .then(csvText => {
-      dataTable = new google.visualization.DataTable();
-      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' }); // Naujas stulpelis etiketėms
-      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+      const spreadsheetUrl = sectionUrls[section];
+      fetch(spreadsheetUrl)
+        .then(response => response.text())
+        .then(csvText => {
+          dataTable = new google.visualization.DataTable();
+          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-      const allDates = {};
-      originalData = [];
+          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+          const allDates = {};
+          originalData = [];
 
-      rows.forEach(row => {
-          if (row.length >= 3) {
+          rows.forEach(row => {
+            if (row.length >= 4) {
               const employee = row[0].trim();
               const startDate = new Date(row[1].trim());
               const endDate = new Date(row[2].trim());
+              const role = row[3].trim();
+              const color = roleColors[role] || "#CCCCCC";
+
               if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                  const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
-                  const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
-                  const periodLabel = `${startLabel}-${endLabel}`;
-                  dataTable.addRow([employee, periodLabel, startDate, endDate]);
-                  originalData.push([employee, periodLabel, startDate, endDate]);
-      
-                  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                      const dateKey = d.toISOString().split('T')[0];
-                      allDates[dateKey] = (allDates[dateKey] || 0) + 1;
-                  }
-              } else {
-                  console.warn(`Invalid row skipped: ${row}`);
+                const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
+                const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
+                const periodLabel = `${startLabel}-${endLabel}`;
+                dataTable.addRow([employee, periodLabel, startDate, endDate]);
+
+                originalData.push([employee, periodLabel, startDate, endDate, color]);
               }
-          }
+            }
+          });
+
+          drawChart('all');
+        })
+        .catch(error => {
+          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
+          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+        });
+    }
+
+    function drawChart(month) {
+      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
+      const filteredData = new google.visualization.DataTable();
+
+      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
+      filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
+      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
+
+      originalData.forEach(row => {
+        const startDate = row[2];
+        const endDate = row[3];
+        if (month === 'all' || (startDate.getMonth() <= month && endDate.getMonth() >= month)) {
+          filteredData.addRow(row);
+        }
       });
 
-
-      dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
-
-      drawChart('all');
-      drawCalendar();
-    })
-    .catch(error => {
-      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-    });
-}
-
-function drawChart(month) {
-  chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-  const filteredData = new google.visualization.DataTable();
-
-  filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-  filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' }); // Naujas stulpelis etiketėms
-  filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-  filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-
-  originalData.forEach(row => {
-    const startDate = row[2];
-    const endDate = row[3];
-    if (
-      month === 'all' ||
-      (startDate.getMonth() <= month && endDate.getMonth() >= month)
-    ) {
-      filteredData.addRow(row);
-    }
-  });
-
-  const options = {
-    height: Math.min(originalData.length * 50, 600),
-    timeline: {
-      groupByRowLabel: true,
-      showRowLabels: true,
-      colorByRowLabel: true // Užtikrina, kad kiekvienas darbuotojas turėtų atskirą spalvą
-    },
-    hAxis: {
-      format: 'MMM dd',
-      textStyle: {
-        fontSize: 12,
-        bold: true
-      }
-    },
-    tooltip: { isHtml: true }
-  };
-
-  chart.draw(filteredData, options);
-}
-
-    function drawCalendar() {
-      const calendar = new google.visualization.Calendar(document.getElementById('calendar'));
-      const calendarData = new google.visualization.DataTable();
-      calendarData.addColumn({ type: 'date', id: 'Date' });
-      calendarData.addColumn({ type: 'number', id: 'Count' });
-
-      calendarData.addRows(dailyCounts);
-
       const options = {
-        title: "Atostogų Intensyvumas",
-        height: 350,
-        colorAxis: {
-          minValue: 0,
-          maxValue: 10,
-          values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          colors: [
-            '#FFE5B4', '#FFD59E', '#FFB86C', '#FF8C42', '#FF7000',
-            '#FF3C00', '#CC2900', '#992000', '#7A1800', '#4D0F00', '#2E0C00'
-          ]
-        },
-        calendar: {
-          cellSize: 15,
-          yearLabel: { fontSize: 14 },
-          dayOfWeekLabel: { fontSize: 10 },
-          monthLabel: { fontSize: 12 }
-        }
+        height: Math.min(originalData.length * 50, 600),
+        timeline: { groupByRowLabel: true },
+        colors: originalData.map(row => row[4])
       };
 
-      calendar.draw(calendarData, options);
-    }
-
-    function filterData(month) {
-      drawChart(month);
+      chart.draw(filteredData, options);
     }
   </script>
 </body>
