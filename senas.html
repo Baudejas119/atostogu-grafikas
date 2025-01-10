@@ -3,6 +3,7 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -30,9 +31,29 @@
 
   <script type="text/javascript">
     google.charts.load("current", { packages: ["timeline"], language: "lt" });
-    google.charts.setOnLoadCallback(drawChart);
+    google.charts.setOnLoadCallback(loadData);
 
-    function drawChart() {
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv";
+
+    function loadData() {
+      Papa.parse(sheetUrl, {
+        download: true,
+        header: true,
+        complete: function(results) {
+          const data = results.data.map(row => [
+            row["Darbuotojas"],
+            new Date(row["Pradžia"]),
+            new Date(row["Pabaiga"])
+          ]);
+          drawChart(data);
+        },
+        error: function(error) {
+          console.error("Klaida įkeliant duomenis:", error);
+        }
+      });
+    }
+
+    function drawChart(data) {
       const container = document.getElementById('timeline');
       const chart = new google.visualization.Timeline(container);
       const dataTable = new google.visualization.DataTable();
@@ -40,39 +61,6 @@
       dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
       dataTable.addColumn({ type: 'date', id: 'Pradžia' });
       dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-
-      const data = [
-        ["Aringas Vagonis", new Date(2025, 5, 30), new Date(2025, 7, 1)],
-        ["Mantė Pancerovienė", new Date(2025, 2, 24), new Date(2025, 3, 4)],
-        ["Mantė Pancerovienė", new Date(2025, 4, 5), new Date(2025, 4, 9)],
-        ["Mantė Pancerovienė", new Date(2025, 9, 2), new Date(2025, 9, 24)],
-        ["Mantė Pancerovienė", new Date(2025, 6, 3), new Date(2025, 6, 4)],
-        ["Asta Bukavickienė", new Date(2025, 0, 13), new Date(2025, 0, 16)],
-        ["Asta Bukavickienė", new Date(2025, 6, 7), new Date(2025, 6, 31)],
-        ["Asta Bukavickienė", new Date(2025, 11, 29), new Date(2025, 11, 31)],
-        ["Violeta Kniukštienė", new Date(2025, 7, 1), new Date(2025, 7, 31)],
-        ["Rasa Hage", new Date(2025, 0, 2), new Date(2025, 0, 3)],
-        ["Rasa Hage", new Date(2025, 1, 17), new Date(2025, 1, 21)],
-        ["Rasa Hage", new Date(2025, 3, 22), new Date(2025, 3, 25)],
-        ["Rasa Hage", new Date(2025, 6, 7), new Date(2025, 6, 25)],
-        ["Rasa Hage", new Date(2025, 11, 29), new Date(2025, 11, 31)],
-        ["Edita Lengvinienė", new Date(2025, 1, 17), new Date(2025, 1, 21)],
-        ["Edita Lengvinienė", new Date(2025, 5, 9), new Date(2025, 6, 4)],
-        ["Jūratė Sučylaitė", new Date(2025, 6, 1), new Date(2025, 6, 31)],
-        ["Inesa Golubovskaja", new Date(2025, 1, 10), new Date(2025, 1, 14)],
-        ["Inesa Golubovskaja", new Date(2025, 5, 23), new Date(2025, 6, 10)],
-        ["Inesa Golubovskaja", new Date(2025, 11, 15), new Date(2025, 11, 31)],
-        ["Ugnė Andrijauskaitė", new Date(2025, 1, 24), new Date(2025, 1, 28)],
-        ["Ugnė Andrijauskaitė", new Date(2025, 4, 2), new Date(2025, 4, 2)],
-        ["Ugnė Andrijauskaitė", new Date(2025, 5, 23), new Date(2025, 6, 11)],
-        ["Ugnė Andrijauskaitė", new Date(2025, 11, 22), new Date(2026, 0, 2)],
-        ["Sandra Andriuškevičienė", new Date(2025, 6, 1), new Date(2025, 6, 31)],
-        ["Inga Kairienė", new Date(2025, 6, 7), new Date(2025, 6, 31)],
-        ["Inga Kairienė", new Date(2025, 11, 22), new Date(2026, 0, 2)],
-        ["Ramunė Jonušė", new Date(2025, 3, 22), new Date(2025, 3, 25)],
-        ["Ramunė Jonušė", new Date(2025, 6, 14), new Date(2025, 7, 1)],
-        ["Ramunė Jonušė", new Date(2025, 11, 22), new Date(2026, 0, 2)]
-      ];
 
       data.forEach(row => dataTable.addRow(row));
 
