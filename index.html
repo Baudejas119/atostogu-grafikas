@@ -2,11 +2,10 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
@@ -14,183 +13,50 @@
       align-items: center;
     }
     h1 {
-      font-weight: 700;
+      font-size: 24px;
+      margin-top: 20px;
     }
-    #controls, #section-controls {
-      margin: 20px;
-    }
-    button, select {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover, select:hover {
-      background-color: #0056b3;
-    }
-    #timeline, #calendar {
+    #timeline {
       width: 90%;
       max-width: 1200px;
-      min-height: 500px;
-      margin: 20px auto;
-      padding: 10px;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-    }
-    .error-message {
-      color: red;
-      font-size: 16px;
-      text-align: center;
+      height: 600px;
+      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <h1>Atostogų grafikas</h1>
-  <div id="section-controls">
-    <label for="section-select">Pasirinkite skyrių:</label>
-    <select id="section-select" onchange="changeSection(this.value)">
-      <option value="PTDS">PTDS</option>
-      <option value="PDS">PDS</option>
-      <option value="Krizes">Krizės</option>
-      <option value="Poumis">Poūmis</option>
-      <option value="UmusII">Ūmus II</option>
-      <option value="UmusIII">Ūmus III</option>
-      <option value="Geronto">Geronto</option>
-      <option value="TerapinisSkyrius">Terapinis skyrius</option>
-    </select>
-  </div>
-  <div id="controls">
-    <button onclick="filterData('all')">Metų apžvalga</button>
-    <button onclick="filterData(0)">Sausis</button>
-    <button onclick="filterData(1)">Vasaris</button>
-    <button onclick="filterData(2)">Kovas</button>
-    <button onclick="filterData(3)">Balandis</button>
-    <button onclick="filterData(4)">Gegužė</button>
-    <button onclick="filterData(5)">Birželis</button>
-    <button onclick="filterData(6)">Liepa</button>
-    <button onclick="filterData(7)">Rugpjūtis</button>
-    <button onclick="filterData(8)">Rugsėjis</button>
-    <button onclick="filterData(9)">Spalis</button>
-    <button onclick="filterData(10)">Lapkritis</button>
-    <button onclick="filterData(11)">Gruodis</button>
-  </div>
+  <h1>Specialistų atostogų grafikas</h1>
   <div id="timeline"></div>
-  <div id="calendar"></div>
 
   <script type="text/javascript">
-    google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
-    google.charts.setOnLoadCallback(() => loadData('PTDS'));
+    google.charts.load("current", { packages: ["timeline"], language: "lt" });
+    google.charts.setOnLoadCallback(drawChart);
 
-    let originalData = [];
-    let dailyCounts = [];
-    let dataTable;
-    let chart;
+    function drawChart() {
+      const container = document.getElementById('timeline');
+      const chart = new google.visualization.Timeline(container);
+      const dataTable = new google.visualization.DataTable();
 
-    const sectionUrls = {
-      PTDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=0&single=true&output=csv',
-      PDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1629487051&single=true&output=csv',
-      Krizes: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1394934574&single=true&output=csv',
-      Poumis: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&single=true&output=csv',
-      UmusII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&single=true&output=csv',
-      UmusIII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&single=true&output=csv',
-      Geronto: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&single=true&output=csv',
-      TerapinisSkyrius: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=490659936&single=true&output=csv'
-    };
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-    const roleColors = {
-      "Vadovas": "#FF5733",
-      "Psichologė vaikų": "#33FF57",
-      "Psichologė": "#3357FF",
-      "Psichologė - psichoterapeutė": "#FF33A6",
-      "Ergoterapeutas": "#FFD700",
-      "Meno terapeutė": "#8A2BE2",
-      "Muzikė": "#FF4500",
-      "Vyr. soc. darbuotoja": "#00CED1",
-      "Socialinė darbuotoja": "#8B4513",
-      "Individualios priežiūros darbuotojas": "#7FFF00"
-    };
+      // Pavyzdiniai duomenys. Juos pakeiskite savo CSV duomenimis.
+      const data = [
+        ['Aringas Vagonis', new Date(2025, 5, 30), new Date(2025, 7, 1)],
+        ['Mantė Pancerovienė', new Date(2025, 2, 24), new Date(2025, 3, 4)],
+        ['Rasa Hage', new Date(2025, 6, 7), new Date(2025, 6, 25)],
+        ['Inesa Golubovskaja', new Date(2025, 11, 15), new Date(2025, 11, 31)]
+      ];
 
-    function changeSection(section) {
-      const selectedUrl = sectionUrls[section];
-      if (selectedUrl) {
-        loadData(section);
-      } else {
-        console.error('Nepavyko rasti skyriaus duomenų.');
-      }
-    }
-
-    function loadData(section) {
-      const spreadsheetUrl = sectionUrls[section];
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          const allDates = {};
-          originalData = [];
-
-          rows.forEach(row => {
-            if (row.length >= 4) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-              const role = row[3].trim();
-              const color = roleColors[role] || "#CCCCCC";
-
-              if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
-                const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
-                const periodLabel = `${startLabel}-${endLabel}`;
-                dataTable.addRow([employee, periodLabel, startDate, endDate]);
-
-                originalData.push([employee, periodLabel, startDate, endDate, color]);
-              }
-            }
-          });
-
-          drawChart('all');
-        })
-        .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
-    }
-
-    function drawChart(month) {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      const filteredData = new google.visualization.DataTable();
-
-      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-
-      originalData.forEach(row => {
-        const startDate = row[2];
-        const endDate = row[3];
-        if (month === 'all' || (startDate.getMonth() <= month && endDate.getMonth() >= month)) {
-          filteredData.addRow(row);
-        }
-      });
+      data.forEach(row => dataTable.addRow(row));
 
       const options = {
-        height: Math.min(originalData.length * 50, 600),
         timeline: { groupByRowLabel: true },
-        colors: originalData.map(row => row[4])
+        height: 400
       };
 
-      chart.draw(filteredData, options);
+      chart.draw(dataTable, options);
     }
   </script>
 </body>
