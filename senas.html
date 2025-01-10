@@ -2,11 +2,10 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
@@ -14,187 +13,75 @@
       align-items: center;
     }
     h1 {
-      font-weight: 700;
+      font-size: 24px;
+      margin-top: 20px;
     }
-    #controls {
-      margin: 20px;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #timeline, #calendar {
+    #timeline {
       width: 90%;
       max-width: 1200px;
-      min-height: 500px;
-      margin: 20px auto; /* Atstumas tarp diagramų */
-      padding: 10px; /* Tarpo vidus */
-      background-color: #fff; /* Baltas fonas */
-      border: 1px solid #ddd; /* Šviesus rėmelis */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Šiek tiek šešėlio */
-      border-radius: 8px; /* Kampų užapvalinimas */
-    }
-    .error-message {
-      color: red;
-      font-size: 16px;
-      text-align: center;
+      height: 600px;
+      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <h1>Atostogų grafikas</h1>
-  <div id="controls">
-    <button onclick="filterData('all')">Metų apžvalga</button>
-    <button onclick="filterData(0)">Sausis</button>
-    <button onclick="filterData(1)">Vasaris</button>
-    <button onclick="filterData(2)">Kovas</button>
-    <button onclick="filterData(3)">Balandis</button>
-    <button onclick="filterData(4)">Gegužė</button>
-    <button onclick="filterData(5)">Birželis</button>
-    <button onclick="filterData(6)">Liepa</button>
-    <button onclick="filterData(7)">Rugpjūtis</button>
-    <button onclick="filterData(8)">Rugsėjis</button>
-    <button onclick="filterData(9)">Spalis</button>
-    <button onclick="filterData(10)">Lapkritis</button>
-    <button onclick="filterData(11)">Gruodis</button>
-  </div>
+  <h1>Specialistų atostogų grafikas</h1>
   <div id="timeline"></div>
-  <div id="calendar"></div>
 
   <script type="text/javascript">
-    google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
-    google.charts.setOnLoadCallback(loadData);
+    google.charts.load("current", { packages: ["timeline"], language: "lt" });
+    google.charts.setOnLoadCallback(drawChart);
 
-    let originalData = [];
-    let dailyCounts = [];
-    let dataTable;
-    let chart;
+    function drawChart() {
+      const container = document.getElementById('timeline');
+      const chart = new google.visualization.Timeline(container);
+      const dataTable = new google.visualization.DataTable();
 
-    function loadData() {
-      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?output=csv';
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Name' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-          dataTable.addColumn({ type: 'string', role: 'tooltip' });
+      const data = [
+        ["Aringas Vagonis", new Date(2025, 5, 30), new Date(2025, 7, 1)],
+        ["Mantė Pancerovienė", new Date(2025, 2, 24), new Date(2025, 3, 4)],
+        ["Mantė Pancerovienė", new Date(2025, 4, 5), new Date(2025, 4, 9)],
+        ["Mantė Pancerovienė", new Date(2025, 9, 2), new Date(2025, 9, 24)],
+        ["Mantė Pancerovienė", new Date(2025, 6, 3), new Date(2025, 6, 4)],
+        ["Asta Bukavickienė", new Date(2025, 0, 13), new Date(2025, 0, 16)],
+        ["Asta Bukavickienė", new Date(2025, 6, 7), new Date(2025, 6, 31)],
+        ["Asta Bukavickienė", new Date(2025, 11, 29), new Date(2025, 11, 31)],
+        ["Violeta Kniukštienė", new Date(2025, 7, 1), new Date(2025, 7, 31)],
+        ["Rasa Hage", new Date(2025, 0, 2), new Date(2025, 0, 3)],
+        ["Rasa Hage", new Date(2025, 1, 17), new Date(2025, 1, 21)],
+        ["Rasa Hage", new Date(2025, 3, 22), new Date(2025, 3, 25)],
+        ["Rasa Hage", new Date(2025, 6, 7), new Date(2025, 6, 25)],
+        ["Rasa Hage", new Date(2025, 11, 29), new Date(2025, 11, 31)],
+        ["Edita Lengvinienė", new Date(2025, 1, 17), new Date(2025, 1, 21)],
+        ["Edita Lengvinienė", new Date(2025, 5, 9), new Date(2025, 6, 4)],
+        ["Jūratė Sučylaitė", new Date(2025, 6, 1), new Date(2025, 6, 31)],
+        ["Inesa Golubovskaja", new Date(2025, 1, 10), new Date(2025, 1, 14)],
+        ["Inesa Golubovskaja", new Date(2025, 5, 23), new Date(2025, 6, 10)],
+        ["Inesa Golubovskaja", new Date(2025, 11, 15), new Date(2025, 11, 31)],
+        ["Ugnė Andrijauskaitė", new Date(2025, 1, 24), new Date(2025, 1, 28)],
+        ["Ugnė Andrijauskaitė", new Date(2025, 4, 2), new Date(2025, 4, 2)],
+        ["Ugnė Andrijauskaitė", new Date(2025, 5, 23), new Date(2025, 6, 11)],
+        ["Ugnė Andrijauskaitė", new Date(2025, 11, 22), new Date(2026, 0, 2)],
+        ["Sandra Andriuškevičienė", new Date(2025, 6, 1), new Date(2025, 6, 31)],
+        ["Inga Kairienė", new Date(2025, 6, 7), new Date(2025, 6, 31)],
+        ["Inga Kairienė", new Date(2025, 11, 22), new Date(2026, 0, 2)],
+        ["Ramunė Jonušė", new Date(2025, 3, 22), new Date(2025, 3, 25)],
+        ["Ramunė Jonušė", new Date(2025, 6, 14), new Date(2025, 7, 1)],
+        ["Ramunė Jonušė", new Date(2025, 11, 22), new Date(2026, 0, 2)]
+      ];
 
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          const allDates = {};
-          rows.forEach(row => {
-            if (row.length >= 4) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-              const tooltip = row[3].trim();
-              if (employee && !isNaN(startDate) && !isNaN(endDate)) {
-                const shortName = employee.split(' ')[0];
-                dataTable.addRow([employee, shortName, startDate, endDate, tooltip]);
-                originalData.push([employee, shortName, startDate, endDate, tooltip]);
-
-                // Count daily occurrences for the calendar
-                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                  const dateKey = d.toISOString().split('T')[0];
-                  allDates[dateKey] = (allDates[dateKey] || 0) + 1;
-                }
-              }
-            }
-          });
-
-          dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
-
-          drawChart('all');
-          drawCalendar();
-        })
-        .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-        });
-    }
-
-    function drawChart(month) {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      const filteredData = new google.visualization.DataTable();
-
-      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', id: 'Name' });
-      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
-      filteredData.addColumn({ type: 'string', role: 'tooltip' });
-
-      originalData.forEach(row => {
-        const startDate = row[2];
-        const endDate = row[3];
-        if (
-          month === 'all' ||
-          (startDate.getMonth() <= month && endDate.getMonth() >= month)
-        ) {
-          filteredData.addRow(row);
-        }
-      });
+      data.forEach(row => dataTable.addRow(row));
 
       const options = {
-        height: Math.min(originalData.length * 50, 600),
-        timeline: {
-          groupByRowLabel: true,
-          showRowLabels: true
-        },
-        hAxis: {
-          format: 'MMM dd',
-          textStyle: {
-            fontSize: 12,
-            bold: true
-          }
-        },
-        tooltip: { isHtml: true }
+        timeline: { groupByRowLabel: true },
+        height: 400
       };
 
-      chart.draw(filteredData, options);
-    }
-
-    function drawCalendar() {
-      const calendar = new google.visualization.Calendar(document.getElementById('calendar'));
-      const calendarData = new google.visualization.DataTable();
-      calendarData.addColumn({ type: 'date', id: 'Date' });
-      calendarData.addColumn({ type: 'number', id: 'Count' });
-
-      calendarData.addRows(dailyCounts);
-
-      const options = {
-        title: "Atostogų Intensyvumas",
-        height: 350,
-        colorAxis: {
-          minValue: 0,
-          maxValue: Math.max(...dailyCounts.map(d => d[1])),
-          values: [0, 1, 3, 5, 7, 10],
-          colors: ['#C1FF72', '#6AB20F', '#FCFF7F', '#FFBF00', '#FF8200', '#FF4500']
-        },
-        calendar: {
-          cellSize: 15,
-          yearLabel: { fontSize: 14 },
-          dayOfWeekLabel: { fontSize: 10 },
-          monthLabel: { fontSize: 12 }
-        }
-      };
-
-      calendar.draw(calendarData, options);
-    }
-
-    function filterData(month) {
-      drawChart(month);
+      chart.draw(dataTable, options);
     }
   </script>
 </body>
