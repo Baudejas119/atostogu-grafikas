@@ -119,7 +119,7 @@
       loadData(section);
     }
 
-    function loadData(section) {
+function loadData(section) {
   const spreadsheetUrl = sectionUrls[section];
   fetch(spreadsheetUrl)
     .then(response => response.text())
@@ -130,21 +130,21 @@
       dataTable.addColumn({ type: 'date', id: 'Pradžia' });
       dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      const rows = csvText.split('\n').map(row => row.split(','));
-      const validRows = rows.filter(row => row.length === 4); // Filtruoti tik eilutes su 4 reikšmėmis
+      const rows = csvText.split('\n')
+        .map(row => row.replace(/\r/g, '').split(',').map(cell => cell.trim())) // Pašalina \r ir tarpelius
+        .filter(row => row.length === 4); // Filtruoja tik 4 stulpelių eilutes
 
       originalData = [];
-      validRows.forEach((row, index) => {
-        if (index === 0 && isNaN(Date.parse(row[1]))) {
-          // Jei pirma eilutė yra antraštė, ją ignoruokite
+      rows.forEach((row, index) => {
+        if (index === 0 && row[0].toLowerCase() === 'darbuotojas') {
           console.warn('Antraštės eilutė praleista:', row);
           return;
         }
 
-        const employee = row[0]?.trim();
-        const startDate = new Date(row[1]?.trim());
-        const endDate = new Date(row[2]?.trim());
-        const role = row[3]?.trim() || "Nenustatyta";
+        const employee = row[0];
+        const startDate = new Date(row[1]);
+        const endDate = new Date(row[2]);
+        const role = row[3] || "Nenustatyta";
 
         if (
           employee &&
@@ -169,28 +169,28 @@
     });
 }
 
-    function drawChart(month) {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      const filteredData = new google.visualization.DataTable();
-      filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
-      filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-      filteredData.addColumn({ type: 'date', id: 'Pradžia' });
-      filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
+function drawChart(month) {
+  chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
+  const filteredData = new google.visualization.DataTable();
+  filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
+  filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+  filteredData.addColumn({ type: 'date', id: 'Pradžia' });
+  filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      originalData.forEach(row => {
-        const startDate = row[2];
-        const endDate = row[3];
-        if (month === 'all' || (startDate.getMonth() <= month && endDate.getMonth() >= month)) {
-          filteredData.addRow(row);
-        }
-      });
-
-      chart.draw(filteredData, {
-        height: Math.min(originalData.length * 50, 600),
-        timeline: { groupByRowLabel: true },
-        colors: originalData.map(row => row[4])
-      });
+  originalData.forEach(row => {
+    const startDate = row[2];
+    const endDate = row[3];
+    if (month === 'all' || (startDate.getMonth() <= month && endDate.getMonth() >= month)) {
+      filteredData.addRow(row);
     }
+  });
+
+  chart.draw(filteredData, {
+    height: Math.min(originalData.length * 50, 600),
+    timeline: { groupByRowLabel: true },
+    colors: originalData.map(row => row[4] || "#CCCCCC") // Priskiria numatytąją spalvą, jei trūksta
+  });
+}
 
     function filterData(month) {
       drawChart(month);
