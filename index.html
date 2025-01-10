@@ -1,89 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      font-weight: 700;
-    }
-    #controls, #section-controls {
-      margin: 20px;
-    }
-    button, select {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover, select:hover {
-      background-color: #0056b3;
-    }
-    #timeline, #calendar {
-      width: 90%;
-      max-width: 1200px;
-      min-height: 500px;
-      margin: 20px auto;
-      padding: 10px;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-    }
-    .error-message {
-      color: red;
-      font-size: 16px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <h1>Atostogų grafikas</h1>
-  <div id="section-controls">
-    <label for="section-select">Pasirinkite skyrių:</label>
-    <select id="section-select" onchange="changeSection(this.value)">
-      <option value="PTDS">PTDS</option>
-      <option value="PDS">PDS</option>
-      <option value="Krizes">Krizės</option>
-      <option value="Poumis">Poūmis</option>
-      <option value="UmusII">Ūmus II</option>
-      <option value="UmusIII">Ūmus III</option>
-      <option value="Geronto">Geronto</option>
-      <option value="TerapinisSkyrius">Terapinis skyrius</option>
-    </select>
-  </div>
-  <div id="controls">
-    <button onclick="filterData('all')">Metų apžvalga</button>
-    <button onclick="filterData(0)">Sausis</button>
-    <button onclick="filterData(1)">Vasaris</button>
-    <button onclick="filterData(2)">Kovas</button>
-    <button onclick="filterData(3)">Balandis</button>
-    <button onclick="filterData(4)">Gegužė</button>
-    <button onclick="filterData(5)">Birželis</button>
-    <button onclick="filterData(6)">Liepa</button>
-    <button onclick="filterData(7)">Rugpjūtis</button>
-    <button onclick="filterData(8)">Rugsėjis</button>
-    <button onclick="filterData(9)">Spalis</button>
-    <button onclick="filterData(10)">Lapkritis</button>
-    <button onclick="filterData(11)">Gruodis</button>
-  </div>
-  <div id="timeline"></div>
-  <div id="calendar"></div>
-
-  <script type="text/javascript">
+<script type="text/javascript">
     google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
     google.charts.setOnLoadCallback(() => loadData('PTDS'));
 
@@ -122,73 +37,54 @@
       loadData(section);
     }
 
-function loadData(section) {
-  const spreadsheetUrl = sectionUrls[section];
-  fetch(spreadsheetUrl)
-    .then(response => response.text())
-    .then(csvText => {
-      dataTable = new google.visualization.DataTable();
-      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+    function loadData(section) {
+      const spreadsheetUrl = sectionUrls[section];
+      fetch(spreadsheetUrl)
+        .then(response => response.text())
+        .then(csvText => {
+          dataTable = new google.visualization.DataTable();
+          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      const rows = csvText.split('\n').map((row, index) => {
-        const cleanedRow = row.replace(/\r/g, '').split(',').map(cell => cell.trim());
-        if (cleanedRow.length !== 4) {
-          console.error(`Klaidinga eilutė (${index + 1}):`, cleanedRow);
-        }
-        return cleanedRow;
-      });
+          const rows = csvText.split('\n').map(row => row.replace(/\r/g, '').split(',').map(cell => cell.trim()));
+          originalData = [];
 
-      originalData = [];
-      rows.forEach((row, index) => {
-        if (index === 0 && row[0].toLowerCase() === 'darbuotojas') {
-          console.warn('Antraštės eilutė praleista:', row);
-          return;
-        }
+          rows.forEach((row, index) => {
+            if (index === 0 && row[0].toLowerCase() === 'darbuotojas') {
+              console.warn('Antraštės eilutė praleista:', row);
+              return;
+            }
 
-        if (row.length !== 4 || !row[0] || !row[1] || !row[2]) {
-          console.error(`Netinkama eilutė (${index + 1}):`, row);
-          return;
-        }
+            if (row.length !== 4 || !row[0] || !row[1] || !row[2]) {
+              console.error(`Klaidinga eilutė (${index + 1}):`, row);
+              return;
+            }
 
-        const employee = row[0];
-        const startDate = new Date(row[1]);
-        const endDate = new Date(row[2]);
-        const role = row[3] || "Nenustatyta";
+            const employee = row[0];
+            const startDate = new Date(row[1]);
+            const endDate = new Date(row[2]);
+            const role = row[3] || "Nenustatyta";
 
-        if (
-          employee &&
-          !isNaN(startDate.getTime()) &&
-          !isNaN(endDate.getTime())
-        ) {
-          const periodLabel = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-          const color = roleColors[role] || "#CCCCCC";
+            if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+              const periodLabel = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+              const color = roleColors[role] || "#CCCCCC";
 
-          dataTable.addRow([employee, periodLabel, startDate, endDate]);
-          originalData.push([employee, periodLabel, startDate, endDate, color]);
-        } else {
-          console.error(`Netinkama duomenų reikšmė (${index + 1}):`, row);
-        }
-      });
+              dataTable.addRow([employee, periodLabel, startDate, endDate]);
+              originalData.push([employee, periodLabel, startDate, endDate, color]);
+            } else {
+              console.error(`Netinkama duomenų reikšmė (${index + 1}):`, row);
+            }
+          });
 
-      drawChart('all');
-    })
-    .catch(error => {
-      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės formatą.</p>';
-      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-    });
-}
-
-      drawChart('all');
-    })
-    .catch(error => {
-      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės formatą.</p>';
-      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-    });
-}
-
+          drawChart('all');
+        })
+        .catch(error => {
+          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės formatą.</p>';
+          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+        });
+    }
 
     function drawChart(month) {
       chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
@@ -216,6 +112,4 @@ function loadData(section) {
     function filterData(month) {
       drawChart(month);
     }
-  </script>
-</body>
-</html>
+</script>
