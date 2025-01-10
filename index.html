@@ -88,7 +88,6 @@
     google.charts.setOnLoadCallback(() => loadData('PTDS'));
 
     let originalData = [];
-    let dailyCounts = [];
     let dataTable;
     let chart;
 
@@ -117,80 +116,43 @@
     };
 
     function changeSection(section) {
-      const selectedUrl = sectionUrls[section];
-      if (selectedUrl) {
-        loadData(section);
-      } else {
-        console.error('Nepavyko rasti skyriaus duomenų.');
-      }
+      loadData(section);
     }
 
     function loadData(section) {
-  const spreadsheetUrl = sectionUrls[section];
-  fetch(spreadsheetUrl)
-    .then(response => response.text())
-    .then(csvText => {
-      dataTable = new google.visualization.DataTable();
-      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+      const spreadsheetUrl = sectionUrls[section];
+      fetch(spreadsheetUrl)
+        .then(response => response.text())
+        .then(csvText => {
+          dataTable = new google.visualization.DataTable();
+          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-      const allDates = {};
-      originalData = [];
+          originalData = csvText.split('\n').slice(1).map(row => row.split(',')).map(row => {
+            const employee = row[0]?.trim();
+            const startDate = new Date(row[1]?.trim());
+            const endDate = new Date(row[2]?.trim());
+            const role = row[3]?.trim() || "Nenustatyta";
+            const color = roleColors[role] || "#CCCCCC";
 
-      rows.forEach((row, index) => {
-        if (row.length === 4) {
-          const employee = row[0].trim();
-          const startDate = new Date(row[1].trim());
-          const endDate = new Date(row[2].trim());
-          const role = row[3].trim() || "Nenustatyta"; // Jei vaidmuo nėra nurodytas
-
-          if (
-            employee &&
-            !isNaN(startDate.getTime()) &&
-            !isNaN(endDate.getTime())
-          ) {
-            const startLabel = `${(startDate.getMonth() + 1)
-              .toString()
-              .padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
-            const endLabel = `${(endDate.getMonth() + 1)
-              .toString()
-              .padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
-            const periodLabel = `${startLabel}-${endLabel}`;
-            const color = roleColors[role] || "#CCCCCC"; // Naudoti numatytąją spalvą, jei nėra vaidmens spalvos
-
-            dataTable.addRow([employee, periodLabel, startDate, endDate]);
-            originalData.push([employee, periodLabel, startDate, endDate, color]);
-          } else {
-            console.warn(`Praleista klaidinga eilutė (${index + 1}): ${row}`);
-          }
-        } else {
-          console.warn(`Netinkamas stulpelių skaičius (${index + 1} eilutė): ${row}`);
-        }
-      });
-
-      drawChart('all');
-    })
-    .catch(error => {
-      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės duomenų formatą ir struktūrą.</p>';
-      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
-    });
-}
+            return (employee && !isNaN(startDate) && !isNaN(endDate))
+              ? [employee, `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, startDate, endDate, color]
+              : null;
+          }).filter(row => row);
 
           drawChart('all');
         })
         .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų.</p>';
+          console.error('Klaida įkeliant duomenis:', error);
         });
     }
 
     function drawChart(month) {
       chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
       const filteredData = new google.visualization.DataTable();
-
       filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
       filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
       filteredData.addColumn({ type: 'date', id: 'Pradžia' });
@@ -204,13 +166,15 @@
         }
       });
 
-      const options = {
+      chart.draw(filteredData, {
         height: Math.min(originalData.length * 50, 600),
         timeline: { groupByRowLabel: true },
         colors: originalData.map(row => row[4])
-      };
+      });
+    }
 
-      chart.draw(filteredData, options);
+    function filterData(month) {
+      drawChart(month);
     }
   </script>
 </body>
