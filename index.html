@@ -32,7 +32,7 @@
     button:hover, select:hover {
       background-color: #0056b3;
     }
-    #timeline {
+    #timeline, #calendar {
       width: 90%;
       max-width: 1200px;
       min-height: 500px;
@@ -62,24 +62,35 @@
       <option value="UmusII">Ūmus II</option>
       <option value="UmusIII">Ūmus III</option>
       <option value="Geronto">Geronto</option>
-      <option value="TerapinisSkyrius">Terapinis skyrius</option>
     </select>
   </div>
+  <div id="controls">
+    <button onclick="filterData('all')">Metų apžvalga</button>
+    <button onclick="filterData(0)">Sausis</button>
+    <button onclick="filterData(1)">Vasaris</button>
+    <button onclick="filterData(2)">Kovas</button>
+    <button onclick="filterData(3)">Balandis</button>
+    <button onclick="filterData(4)">Gegužė</button>
+    <button onclick="filterData(5)">Birželis</button>
+    <button onclick="filterData(6)">Liepa</button>
+    <button onclick="filterData(7)">Rugpjūtis</button>
+    <button onclick="filterData(8)">Rugsėjis</button>
+    <button onclick="filterData(9)">Spalis</button>
+    <button onclick="filterData(10)">Lapkritis</button>
+    <button onclick="filterData(11)">Gruodis</button>
+  </div>
   <div id="timeline"></div>
+  <div id="calendar"></div>
 
   <script type="text/javascript">
-    // Įkeliame Google Charts biblioteką
-    google.charts.load("current", { packages: ["timeline"], language: "lt" });
+    google.charts.load("current", { packages: ["timeline", "calendar"], language: "lt" });
+    google.charts.setOnLoadCallback(() => loadData('PTDS'));
 
-    // Kviečiame funkciją tik tada, kai Google Charts pilnai užkrauta
-    google.charts.setOnLoadCallback(initialize);
-
-    // Globalūs kintamieji
     let originalData = [];
-    let chart;
+    let dailyCounts = [];
     let dataTable;
+    let chart;
 
-    // Skyrių nuorodos
     const sectionUrls = {
       PTDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=0&single=true&output=csv',
       PDS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1629487051&single=true&output=csv',
@@ -87,66 +98,139 @@
       Poumis: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&single=true&output=csv',
       UmusII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&single=true&output=csv',
       UmusIII: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&single=true&output=csv',
-      Geronto: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&single=true&output=csv',
-      TerapinisSkyrius: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=490659936&single=true&output=csv'
+      Geronto: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&single=true&output=csv'
     };
 
-    // Funkcija inicijuoti Google Charts ir duomenų įkėlimą
-    function initialize() {
-      console.log("Google Charts sėkmingai užkrautas!");
-      loadData('PTDS'); // Pradinis skyrius
-    }
-
-    // Funkcija keisti skyrių
     function changeSection(section) {
-      console.log(`Keičiamas skyrius į: ${section}`);
-      loadData(section);
+      const selectedUrl = sectionUrls[section];
+      if (selectedUrl) {
+        loadData(section);
+      } else {
+        console.error('Nepavyko rasti skyriaus duomenų.');
+      }
     }
 
-    // Funkcija duomenims užkrauti
     function loadData(section) {
-      const spreadsheetUrl = sectionUrls[section];
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+  const spreadsheetUrl = sectionUrls[section];
+  fetch(spreadsheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' }); // Naujas stulpelis etiketėms
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-          const rows = csvText.split('\n').slice(1).map(row => row.split(',').map(cell => cell.trim()));
+      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+      const allDates = {};
+      originalData = [];
 
-          originalData = [];
-          rows.forEach(row => {
-            if (row.length === 4) {
-              const employee = row[0];
-              const startDate = new Date(row[1]);
-              const endDate = new Date(row[2]);
+      rows.forEach(row => {
+        if (row.length >= 3) {
+          const employee = row[0].trim();
+          const startDate = new Date(row[1].trim());
+          const endDate = new Date(row[2].trim());
+          if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            const startLabel = ${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')};
+            const endLabel = ${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')};
+            const periodLabel = ${startLabel}-${endLabel};
+            dataTable.addRow([employee, periodLabel, startDate, endDate]);
+            originalData.push([employee, periodLabel, startDate, endDate]);
 
-              if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                const periodLabel = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-                dataTable.addRow([employee, periodLabel, startDate, endDate]);
-                originalData.push([employee, periodLabel, startDate, endDate]);
-              }
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+              const dateKey = d.toISOString().split('T')[0];
+              allDates[dateKey] = (allDates[dateKey] || 0) + 1;
             }
-          });
+          } else {
+            console.warn(Invalid row skipped: ${row});
+          }
+        }
+      });
 
-          drawChart();
-        })
-        .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite šaltinį.</p>';
-          console.error('Klaida įkeliant duomenis:', error);
-        });
+      dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
+
+      drawChart('all');
+      drawCalendar();
+    })
+    .catch(error => {
+      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite duomenų šaltinį.</p>';
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
+
+function drawChart(month) {
+  chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
+  const filteredData = new google.visualization.DataTable();
+
+  filteredData.addColumn({ type: 'string', id: 'Darbuotojas' });
+  filteredData.addColumn({ type: 'string', id: 'Atostogų laikotarpis' }); // Naujas stulpelis etiketėms
+  filteredData.addColumn({ type: 'date', id: 'Pradžia' });
+  filteredData.addColumn({ type: 'date', id: 'Pabaiga' });
+
+  originalData.forEach(row => {
+    const startDate = row[2];
+    const endDate = row[3];
+    if (
+      month === 'all' ||
+      (startDate.getMonth() <= month && endDate.getMonth() >= month)
+    ) {
+      filteredData.addRow(row);
+    }
+  });
+
+  const options = {
+    height: Math.min(originalData.length * 50, 600),
+    timeline: {
+      groupByRowLabel: true,
+      showRowLabels: true,
+      colorByRowLabel: true // Užtikrina, kad kiekvienas darbuotojas turėtų atskirą spalvą
+    },
+    hAxis: {
+      format: 'MMM dd',
+      textStyle: {
+        fontSize: 12,
+        bold: true
+      }
+    },
+    tooltip: { isHtml: true }
+  };
+
+  chart.draw(filteredData, options);
+}
+
+    function drawCalendar() {
+      const calendar = new google.visualization.Calendar(document.getElementById('calendar'));
+      const calendarData = new google.visualization.DataTable();
+      calendarData.addColumn({ type: 'date', id: 'Date' });
+      calendarData.addColumn({ type: 'number', id: 'Count' });
+
+      calendarData.addRows(dailyCounts);
+
+      const options = {
+        title: "Atostogų Intensyvumas",
+        height: 350,
+        colorAxis: {
+          minValue: 0,
+          maxValue: 10,
+          values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          colors: [
+            '#FFE5B4', '#FFD59E', '#FFB86C', '#FF8C42', '#FF7000',
+            '#FF3C00', '#CC2900', '#992000', '#7A1800', '#4D0F00', '#2E0C00'
+          ]
+        },
+        calendar: {
+          cellSize: 15,
+          yearLabel: { fontSize: 14 },
+          dayOfWeekLabel: { fontSize: 10 },
+          monthLabel: { fontSize: 12 }
+        }
+      };
+
+      calendar.draw(calendarData, options);
     }
 
-    // Funkcija atvaizduoti grafiką
-    function drawChart() {
-      chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
-      chart.draw(dataTable, {
-        height: Math.min(originalData.length * 50, 600),
-        timeline: { groupByRowLabel: true }
-      });
+    function filterData(month) {
+      drawChart(month);
     }
   </script>
 </body>
