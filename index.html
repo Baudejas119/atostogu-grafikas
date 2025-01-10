@@ -130,21 +130,29 @@ function loadData(section) {
       dataTable.addColumn({ type: 'date', id: 'Pradžia' });
       dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-      const rows = csvText.split('\n')
-        .map(row => row.replace(/\r/g, '').split(',').map(cell => cell.trim())) // Pašalina \r ir tarpelius
-        .filter(row => row.length === 4); // Filtruoja tik 4 stulpelių eilutes
+      const rows = csvText
+        .split('\n')
+        .map(row => row.replace(/\r/g, '').split(',').map(cell => cell.trim())) // Pašaliname nereikalingus simbolius ir tarpus
+        .filter(row => row.some(cell => cell)); // Pašaliname tuščias eilutes
 
       originalData = [];
       rows.forEach((row, index) => {
+        // Patikriname, ar tai antraštė
         if (index === 0 && row[0].toLowerCase() === 'darbuotojas') {
           console.warn('Antraštės eilutė praleista:', row);
+          return;
+        }
+
+        // Tikriname eilutės formatą
+        if (row.length !== 4) {
+          console.warn(`Netinkamo formato eilutė praleista (${index + 1}):`, row);
           return;
         }
 
         const employee = row[0];
         const startDate = new Date(row[1]);
         const endDate = new Date(row[2]);
-        const role = row[3] || "Nenustatyta";
+        const role = row[3] || "Nenustatyta"; // NaN pakeičiame į "Nenustatyta"
 
         if (
           employee &&
@@ -157,7 +165,7 @@ function loadData(section) {
           dataTable.addRow([employee, periodLabel, startDate, endDate]);
           originalData.push([employee, periodLabel, startDate, endDate, color]);
         } else {
-          console.warn(`Praleista klaidinga eilutė (${index + 1}):`, row);
+          console.warn(`Klaidinga eilutė (${index + 1}):`, row);
         }
       });
 
