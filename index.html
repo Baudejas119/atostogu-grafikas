@@ -126,26 +126,27 @@
       originalData = [];
 
       rows.forEach(row => {
-        if (row.length >= 3) {
-          const employee = row[0].trim();
-          const startDate = new Date(row[1].trim());
-          const endDate = new Date(row[2].trim());
-          if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-            const startLabel = ${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')};
-            const endLabel = ${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')};
-            const periodLabel = ${startLabel}-${endLabel};
-            dataTable.addRow([employee, periodLabel, startDate, endDate]);
-            originalData.push([employee, periodLabel, startDate, endDate]);
-
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-              const dateKey = d.toISOString().split('T')[0];
-              allDates[dateKey] = (allDates[dateKey] || 0) + 1;
-            }
-          } else {
-            console.warn(Invalid row skipped: ${row});
+          if (row.length >= 3) {
+              const employee = row[0].trim();
+              const startDate = new Date(row[1].trim());
+              const endDate = new Date(row[2].trim());
+              if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                  const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
+                  const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
+                  const periodLabel = `${startLabel}-${endLabel}`;
+                  dataTable.addRow([employee, periodLabel, startDate, endDate]);
+                  originalData.push([employee, periodLabel, startDate, endDate]);
+      
+                  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                      const dateKey = d.toISOString().split('T')[0];
+                      allDates[dateKey] = (allDates[dateKey] || 0) + 1;
+                  }
+              } else {
+                  console.warn(`Invalid row skipped: ${row}`);
+              }
           }
-        }
       });
+
 
       dailyCounts = Object.entries(allDates).map(([date, count]) => [new Date(date), count]);
 
