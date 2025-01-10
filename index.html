@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <h1>Specialistų atostogų grafikas</h1>
+  <div id="controls">
+    <label for="section-select">Pasirinkite skyrių:</label>
+    <select id="section-select" onchange="loadData()">
+      <option value="PTDS">PTDS</option>
+      <option value="PDS">PDS</option>
+      <option value="Krizes">Krizės</option>
+      <option value="Poumis">Poūmis</option>
+      <option value="Geronto">Geronto</option>
+      <option value="UmusII">Ūmus II</option>
+      <option value="UmusIII">Ūmus III</option>
+    </select>
+    <div>
+      <button onclick="filterByMonth('all')">Visi metai</button>
+      <button onclick="filterByMonth(0)">Sausis</button>
+      <button onclick="filterByMonth(1)">Vasaris</button>
+      <button onclick="filterByMonth(2)">Kovas</button>
+      <button onclick="filterByMonth(3)">Balandis</button>
+      <button onclick="filterByMonth(4)">Gegužė</button>
+      <button onclick="filterByMonth(5)">Birželis</button>
+      <button onclick="filterByMonth(6)">Liepa</button>
+      <button onclick="filterByMonth(7)">Rugpjūtis</button>
+      <button onclick="filterByMonth(8)">Rugsėjis</button>
+      <button onclick="filterByMonth(9)">Spalis</button>
+      <button onclick="filterByMonth(10)">Lapkritis</button>
+      <button onclick="filterByMonth(11)">Gruodis</button>
+    </div>
+  </div>
+  <div id="timeline-frame">
+    <div id="timeline"></div>
+  </div>
+</body>
+</html>
