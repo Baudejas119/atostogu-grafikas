@@ -122,36 +122,73 @@
       loadData(section);
     }
 
-    function loadData(section) {
-      const spreadsheetUrl = sectionUrls[section];
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+function loadData(section) {
+  const spreadsheetUrl = sectionUrls[section];
+  fetch(spreadsheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-          originalData = csvText.split('\n').slice(1).map(row => row.split(',')).map(row => {
-            const employee = row[0]?.trim();
-            const startDate = new Date(row[1]?.trim());
-            const endDate = new Date(row[2]?.trim());
-            const role = row[3]?.trim() || "Nenustatyta";
-            const color = roleColors[role] || "#CCCCCC";
+      const rows = csvText.split('\n').map((row, index) => {
+        const cleanedRow = row.replace(/\r/g, '').split(',').map(cell => cell.trim());
+        if (cleanedRow.length !== 4) {
+          console.error(`Klaidinga eilutė (${index + 1}):`, cleanedRow);
+        }
+        return cleanedRow;
+      });
 
-            return (employee && !isNaN(startDate) && !isNaN(endDate))
-              ? [employee, `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, startDate, endDate, color]
-              : null;
-          }).filter(row => row);
+      originalData = [];
+      rows.forEach((row, index) => {
+        if (index === 0 && row[0].toLowerCase() === 'darbuotojas') {
+          console.warn('Antraštės eilutė praleista:', row);
+          return;
+        }
 
-          drawChart('all');
-        })
-        .catch(error => {
-          document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų.</p>';
-          console.error('Klaida įkeliant duomenis:', error);
-        });
-    }
+        if (row.length !== 4 || !row[0] || !row[1] || !row[2]) {
+          console.error(`Netinkama eilutė (${index + 1}):`, row);
+          return;
+        }
+
+        const employee = row[0];
+        const startDate = new Date(row[1]);
+        const endDate = new Date(row[2]);
+        const role = row[3] || "Nenustatyta";
+
+        if (
+          employee &&
+          !isNaN(startDate.getTime()) &&
+          !isNaN(endDate.getTime())
+        ) {
+          const periodLabel = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+          const color = roleColors[role] || "#CCCCCC";
+
+          dataTable.addRow([employee, periodLabel, startDate, endDate]);
+          originalData.push([employee, periodLabel, startDate, endDate, color]);
+        } else {
+          console.error(`Netinkama duomenų reikšmė (${index + 1}):`, row);
+        }
+      });
+
+      drawChart('all');
+    })
+    .catch(error => {
+      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės formatą.</p>';
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
+
+      drawChart('all');
+    })
+    .catch(error => {
+      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės formatą.</p>';
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
+
 
     function drawChart(month) {
       chart = chart || new google.visualization.Timeline(document.getElementById('timeline'));
