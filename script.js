@@ -42,37 +42,53 @@ function loadData() {
 }
 
 function filterByMonth(month) {
-  const filteredData = month === 'all' ? originalData : originalData.filter(row => {
-    const startMonth = row[1].getMonth();
-    const endMonth = row[2].getMonth();
-    return startMonth <= month && endMonth >= month;
-  });
-  drawChart(filteredData);
-}
-
-function drawChart(data) {
-  const container = document.getElementById('timeline');
-  const chart = new google.visualization.Timeline(container);
-  const dataTable = new google.visualization.DataTable();
-
-  dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-  dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-  dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-
-  const yearStart = new Date(new Date().getFullYear(), 0, 1);
-  const yearEnd = new Date(new Date().getFullYear(), 11, 31);
-
-  data.forEach(row => dataTable.addRow(row));
-
-  const options = {
-    timeline: { groupByRowLabel: true },
-    height: Math.max(data.length * 50, 400),
-    width: '100%',
-    hAxis: {
-      minValue: yearStart,
-      maxValue: yearEnd
+    let filteredData;
+    let monthStart, monthEnd;
+  
+    if (month === 'all') {
+      filteredData = originalData;
+      monthStart = new Date(new Date().getFullYear(), 0, 1); // Metų pradžia
+      monthEnd = new Date(new Date().getFullYear(), 11, 31); // Metų pabaiga
+    } else {
+      const year = new Date().getFullYear();
+      monthStart = new Date(year, month, 1); // Pasirinkto mėnesio pradžia
+      monthEnd = new Date(year, month + 1, 0); // Pasirinkto mėnesio pabaiga
+  
+      filteredData = originalData.filter(row => {
+        const start = row[1];
+        const end = row[2];
+        return (
+          (start >= monthStart && start <= monthEnd) || // Atostogos prasideda pasirinktu mėnesiu
+          (end >= monthStart && end <= monthEnd) || // Atostogos baigiasi pasirinktu mėnesiu
+          (start <= monthStart && end >= monthEnd) // Atostogos apima visą mėnesį
+        );
+      });
     }
-  };
+  
+    drawChart(filteredData, monthStart, monthEnd);
+  }  
 
-  chart.draw(dataTable, options);
-}
+  function drawChart(data, monthStart, monthEnd) {
+    const container = document.getElementById('timeline');
+    const chart = new google.visualization.Timeline(container);
+    const dataTable = new google.visualization.DataTable();
+  
+    dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+    dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+    dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+  
+    data.forEach(row => dataTable.addRow(row));
+  
+    const options = {
+      timeline: { groupByRowLabel: true },
+      height: Math.max(data.length * 50, 400),
+      width: '100%',
+      hAxis: {
+        minValue: monthStart, // Pradžios data
+        maxValue: monthEnd,   // Pabaigos data
+      }
+    };
+  
+    chart.draw(dataTable, options);
+  }
+  
