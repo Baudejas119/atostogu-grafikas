@@ -126,38 +126,58 @@
     }
 
     function loadData(section) {
-      const spreadsheetUrl = sectionUrls[section];
-      fetch(spreadsheetUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          dataTable = new google.visualization.DataTable();
-          dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-          dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
-          dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-          dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+  const spreadsheetUrl = sectionUrls[section];
+  fetch(spreadsheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+      dataTable.addColumn({ type: 'string', id: 'Atostogų laikotarpis' });
+      dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+      dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
 
-          const rows = csvText.split('\n').slice(1).map(row => row.split(','));
-          const allDates = {};
-          originalData = [];
+      const rows = csvText.split('\n').slice(1).map(row => row.split(','));
+      const allDates = {};
+      originalData = [];
 
-          rows.forEach(row => {
-            if (row.length >= 4) {
-              const employee = row[0].trim();
-              const startDate = new Date(row[1].trim());
-              const endDate = new Date(row[2].trim());
-              const role = row[3].trim();
-              const color = roleColors[role] || "#CCCCCC";
+      rows.forEach((row, index) => {
+        if (row.length === 4) {
+          const employee = row[0].trim();
+          const startDate = new Date(row[1].trim());
+          const endDate = new Date(row[2].trim());
+          const role = row[3].trim() || "Nenustatyta"; // Jei vaidmuo nėra nurodytas
 
-              if (employee && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                const startLabel = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
-                const endLabel = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
-                const periodLabel = `${startLabel}-${endLabel}`;
-                dataTable.addRow([employee, periodLabel, startDate, endDate]);
+          if (
+            employee &&
+            !isNaN(startDate.getTime()) &&
+            !isNaN(endDate.getTime())
+          ) {
+            const startLabel = `${(startDate.getMonth() + 1)
+              .toString()
+              .padStart(2, '0')}.${startDate.getDate().toString().padStart(2, '0')}`;
+            const endLabel = `${(endDate.getMonth() + 1)
+              .toString()
+              .padStart(2, '0')}.${endDate.getDate().toString().padStart(2, '0')}`;
+            const periodLabel = `${startLabel}-${endLabel}`;
+            const color = roleColors[role] || "#CCCCCC"; // Naudoti numatytąją spalvą, jei nėra vaidmens spalvos
 
-                originalData.push([employee, periodLabel, startDate, endDate, color]);
-              }
-            }
-          });
+            dataTable.addRow([employee, periodLabel, startDate, endDate]);
+            originalData.push([employee, periodLabel, startDate, endDate, color]);
+          } else {
+            console.warn(`Praleista klaidinga eilutė (${index + 1}): ${row}`);
+          }
+        } else {
+          console.warn(`Netinkamas stulpelių skaičius (${index + 1} eilutė): ${row}`);
+        }
+      });
+
+      drawChart('all');
+    })
+    .catch(error => {
+      document.getElementById('timeline').innerHTML = '<p class="error-message">Nepavyko įkelti duomenų. Patikrinkite lentelės duomenų formatą ir struktūrą.</p>';
+      console.error('Klaida įkeliant duomenis iš Google Sheets:', error);
+    });
+}
 
           drawChart('all');
         })
