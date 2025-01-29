@@ -1,94 +1,71 @@
-google.charts.load("current", { packages: ["timeline"], language: "lt" });
-google.charts.setOnLoadCallback(() => loadData("PTDS"));
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div id="login-container">
+    <h1>Prisijungimas</h1>
+    <p>Įveskite savo inicialus (pirmas 3 vardo ir pirmas 3 pavardės raides, be lietuviškų raidžių)</p>
+    <input type="text" id="user-input" placeholder="pvz., arivag">
+    <button onclick="checkLogin()">Prisijungti</button>
+    <p id="error-message" class="hidden">Neteisingi inicialai!</p>
+  </div>
 
-const sectionUrls = {
-  PTDS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=0&output=csv",
-  PDS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1629487051&output=csv",
-  Krizes: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1394934574&output=csv",
-  Poumis: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&output=csv",
-  Geronto: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&output=csv",
-  UmusII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&output=csv",
-  UmusIII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&output=csv"
-};
+  <div id="main-content" class="hidden">
+    <h1>Specialistų atostogų grafikas</h1>
+    <div id="controls">
+      <label for="section-select">Pasirinkite skyrių:</label>
+      <select id="section-select" onchange="loadData()">
+        <option value="PTDS">PTDS</option>
+        <option value="PDS">PDS</option>
+        <option value="Krizes">Krizės</option>
+        <option value="Poumis">Poūmis</option>
+        <option value="Geronto">Geronto</option>
+        <option value="UmusII">Ūmus II</option>
+        <option value="UmusIII">Ūmus III</option>
+      </select>
+      <div>
+        <button onclick="filterByMonth('all')">Visi metai</button>
+        <button onclick="filterByMonth(0)">Sausis</button>
+        <button onclick="filterByMonth(1)">Vasaris</button>
+        <button onclick="filterByMonth(2)">Kovas</button>
+        <button onclick="filterByMonth(3)">Balandis</button>
+        <button onclick="filterByMonth(4)">Gegužė</button>
+        <button onclick="filterByMonth(5)">Birželis</button>
+        <button onclick="filterByMonth(6)">Liepa</button>
+        <button onclick="filterByMonth(7)">Rugpjūtis</button>
+        <button onclick="filterByMonth(8)">Rugsėjis</button>
+        <button onclick="filterByMonth(9)">Spalis</button>
+        <button onclick="filterByMonth(10)">Lapkritis</button>
+        <button onclick="filterByMonth(11)">Gruodis</button>
+      </div>
+    </div>
+    <div id="timeline-frame">
+      <div id="timeline"></div>
+    </div>
+  </div>
+  <script>
+    const allowedUsers = [
+      "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
+      "inegol", "eglkav", "edilen", "marmel", "enrrag", "karsra", "ugnand",
+      "emirus", "valser", "raisim", "rashag", "rasjau", "ilmnor", "greval",
+      "simles", "kribos", "anggel", "jurbel", "virrut", "vaizar"
+    ];
 
-let originalData = [];
-
-function loadData() {
-  const section = document.getElementById("section-select").value;
-  const url = sectionUrls[section];
-
-  Papa.parse(url, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      originalData = results.data.map(row => {
-        if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
-          return [
-            row["Darbuotojas"],
-            new Date(row["Pradžia"]),
-            new Date(row["Pabaiga"])
-          ];
-        } else {
-          console.warn("Praleistas įrašas dėl trūkstamų duomenų:", row);
-          return null;
-        }
-      }).filter(row => row !== null);
-      drawChart(originalData);
-    },
-    error: function(error) {
-      console.error("Klaida įkeliant duomenis:", error);
-    }
-  });
-}
-
-function filterByMonth(month) {
-    let filteredData;
-    let monthStart, monthEnd;
-  
-    if (month === 'all') {
-      filteredData = originalData;
-      monthStart = new Date(new Date().getFullYear(), 0, 1); // Metų pradžia
-      monthEnd = new Date(new Date().getFullYear(), 11, 31); // Metų pabaiga
-    } else {
-      const year = new Date().getFullYear();
-      monthStart = new Date(year, month, 1); // Pasirinkto mėnesio pradžia
-      monthEnd = new Date(year, month + 1, 0); // Pasirinkto mėnesio pabaiga
-  
-      filteredData = originalData.filter(row => {
-        const start = row[1];
-        const end = row[2];
-        return (
-          (start >= monthStart && start <= monthEnd) || // Atostogos prasideda pasirinktu mėnesiu
-          (end >= monthStart && end <= monthEnd) || // Atostogos baigiasi pasirinktu mėnesiu
-          (start <= monthStart && end >= monthEnd) // Atostogos apima visą mėnesį
-        );
-      });
-    }
-  
-    drawChart(filteredData, monthStart, monthEnd);
-  }  
-
-  function drawChart(data, monthStart, monthEnd) {
-    const container = document.getElementById('timeline');
-    const chart = new google.visualization.Timeline(container);
-    const dataTable = new google.visualization.DataTable();
-  
-    dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-    dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-    dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-  
-    data.forEach(row => dataTable.addRow(row));
-  
-    const options = {
-      timeline: { groupByRowLabel: true },
-      height: Math.max(data.length * 50, 400),
-      width: '100%',
-      hAxis: {
-        minValue: monthStart, // Pradžios data
-        maxValue: monthEnd,   // Pabaigos data
+    function checkLogin() {
+      const input = document.getElementById("user-input").value.trim().toLowerCase();
+      if (allowedUsers.includes(input)) {
+        document.getElementById("login-container").classList.add("hidden");
+        document.getElementById("main-content").classList.remove("hidden");
+      } else {
+        document.getElementById("error-message").classList.remove("hidden");
       }
-    };
-  
-    chart.draw(dataTable, options);
-  }
-  
+    }
+  </script>
+</body>
+</html>
