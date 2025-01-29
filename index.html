@@ -1,53 +1,102 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://www.gstatic.com/charts/loader.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <script src="script.js" defer></script>
-</head>
-<body>
-  <div id="login-container">
-    <h1>Prisijungimas</h1>
-    <p>Įveskite savo inicialus (pirmas 3 vardo ir pirmas 3 pavardės raides, be lietuviškų raidžių)</p>
-    <input type="text" id="user-input" placeholder="pvz., jonpet">
-    <button onclick="checkLogin()">Prisijungti</button>
-    <p id="error-message" class="hidden">Neteisingi inicialai!</p>
-  </div>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ Puslapis užkrautas.");
+});
 
-  <div id="main-content" class="hidden">
-    <h1>Specialistų atostogų grafikas</h1>
-    <div id="controls">
-      <label for="section-select">Pasirinkite skyrių:</label>
-      <select id="section-select" onchange="loadData()">
-        <option value="PTDS">PTDS</option>
-        <option value="PDS">PDS</option>
-        <option value="Krizes">Krizės</option>
-        <option value="Poumis">Poūmis</option>
-        <option value="Geronto">Geronto</option>
-        <option value="UmusII">Ūmus II</option>
-        <option value="UmusIII">Ūmus III</option>
-      </select>
-      <div>
-        <button onclick="filterByMonth('all')">Visi metai</button>
-        <button onclick="filterByMonth(0)">Sausis</button>
-        <button onclick="filterByMonth(1)">Vasaris</button>
-        <button onclick="filterByMonth(2)">Kovas</button>
-        <button onclick="filterByMonth(3)">Balandis</button>
-        <button onclick="filterByMonth(4)">Gegužė</button>
-        <button onclick="filterByMonth(5)">Birželis</button>
-        <button onclick="filterByMonth(6)">Liepa</button>
-        <button onclick="filterByMonth(7)">Rugpjūtis</button>
-        <button onclick="filterByMonth(8)">Rugsėjis</button>
-        <button onclick="filterByMonth(9)">Spalis</button>
-        <button onclick="filterByMonth(10)">Lapkritis</button>
-        <button onclick="filterByMonth(11)">Gruodis</button>
-      </div>
-    </div>
-    <div id="timeline-frame">
-      <div id="timeline"></div>
-    </div>
-  </div>
-</body>
-</html>
+// Google Sheets nuorodos kiekvienam skyriui
+window.sectionUrls = {
+  PTDS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=0&output=csv",
+  PDS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1629487051&output=csv",
+  Krizes: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1394934574&output=csv",
+  Poumis: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&output=csv",
+  Geronto: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&output=csv",
+  UmusII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&output=csv",
+  UmusIII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&output=csv"
+};
+
+function loadData() {
+    console.log("🔄 Kviečiama loadData()...");
+    const section = document.getElementById("section-select").value;
+    const url = window.sectionUrls[section];
+
+    if (!url) {
+        console.error("⚠️ Nėra duomenų šiam skyriui.");
+        return;
+    }
+
+    Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: function (results) {
+            console.log("✅ Duomenys įkelti!", results.data);
+            window.originalData = results.data.map(row => {
+                if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
+                    return [
+                        row["Darbuotojas"],
+                        new Date(row["Pradžia"]),
+                        new Date(row["Pabaiga"])
+                    ];
+                } else {
+                    console.warn("⚠️ Praleistas įrašas dėl trūkstamų duomenų:", row);
+                    return null;
+                }
+            }).filter(row => row !== null);
+            drawChart(window.originalData);
+        },
+        error: function (error) {
+            console.error("❌ Klaida įkeliant duomenis:", error);
+        }
+    });
+}
+
+function checkLogin() {
+    console.log("🟡 Vykdoma checkLogin() funkcija...");
+    const input = document.getElementById("user-input").value.trim().toLowerCase();
+    
+    if (window.allowedUsers.includes(input)) {
+        console.log("✅ Prisijungimas sėkmingas!");
+        document.getElementById("login-container").classList.add("hidden");
+        document.getElementById("main-content").classList.remove("hidden");
+
+        google.charts.load('current', { packages: ['timeline'] });
+        google.charts.setOnLoadCallback(() => loadData());
+    } else {
+        console.warn("❌ Neteisingi inicialai.");
+        document.getElementById("error-message").classList.remove("hidden");
+    }
+}
+
+window.allowedUsers = ["arivag", "marzur", "dailub", "zilkun"];
+
+google.charts.load('current', { packages: ['timeline'] });
+google.charts.setOnLoadCallback(() => loadData());
+
+function drawChart(data) {
+    console.log("📊 Braižomas grafikas su duomenimis:", data);
+    
+    const container = document.getElementById("timeline");
+    const chart = new google.visualization.Timeline(container);
+    const dataTable = new google.visualization.DataTable();
+    
+    dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+    dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+    dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+
+    data.forEach(row => dataTable.addRow(row));
+
+    const options = {
+        timeline: { groupByRowLabel: true },
+        height: Math.max(data.length * 50, 400),
+        width: '100%'
+    };
+
+    chart.draw(dataTable, options);
+
+    // Pridedame pastabą po grafiku
+    const note = document.createElement("p");
+    note.innerText = "*rodomos dienos užėjus su pelyte ant atostogų -1 diena (netiksliai, nieko nėra tobulo)";
+    note.style.fontSize = "12px";
+    note.style.color = "gray";
+    note.style.marginTop = "10px";
+    container.appendChild(note);
+}
+window.drawChart = drawChart;
