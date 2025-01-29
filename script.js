@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadData() {
     console.log("🔄 Kviečiama loadData()...");
 
-    // JSON failo URL (PAKEISK su tavo realiu URL)
-    const url = "https://raw.githubusercontent.com/user/repository/main/data.json";
+    // PAKEISTAS URL SU RAW VERSIJA
+    const url = "https://raw.githubusercontent.com/vartotojas119/atostogu-grafikas/main/data.json";
 
     fetch(url)
         .then(response => {
