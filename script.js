@@ -93,3 +93,6 @@ function filterByMonth(month) {
     }
     drawChart(filteredData);
 }
+
+// Užtikriname, kad filterByMonth būtų prieinama HTML mygtukams
+window.filterByMonth = filterByMonth;
