@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Puslapis užkrautas.");
 
-  // Vartotojų sąrašas dabar tikrai globalus
   window.allowedUsers = [
     "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
     "inegol", "eglkav", "edilen", "marmel", "enrrag", "karsra", "ugnand",
@@ -9,17 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     "simles", "kribos", "anggel", "jurbel", "virrut", "vaizar"
   ];
   console.log("📌 Vartotojų inicialai:", window.allowedUsers);
-
-  document.getElementById("user-input").addEventListener("keypress", function (event) {
-    if (event.key === "Enter") {
-      checkLogin();
-    }
-  });
-
-  document.getElementById("error-message").classList.add("hidden");
 });
 
-// Prisijungimo tikrinimas
 function checkLogin() {
   console.log("🟡 Vykdoma checkLogin() funkcija...");
   
@@ -38,4 +28,39 @@ function checkLogin() {
     console.warn("❌ Neteisingi inicialai.");
     document.getElementById("error-message").classList.remove("hidden");
   }
+}
+
+// ✅ Pridėta loadData() funkcija
+function loadData() {
+    console.log("🔄 Kviečiama loadData()...");
+    const section = document.getElementById("section-select").value;
+    if (!sectionUrls[section]) {
+        console.error("⚠️ Nepavyko rasti duomenų šaltinio.");
+        return;
+    }
+    const url = sectionUrls[section];
+
+    Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: function (results) {
+            console.log("✅ Duomenys įkelti!");
+            originalData = results.data.map(row => {
+                if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
+                    return [
+                        row["Darbuotojas"],
+                        new Date(row["Pradžia"]),
+                        new Date(row["Pabaiga"])
+                    ];
+                } else {
+                    console.warn("⚠️ Praleistas įrašas dėl trūkstamų duomenų:", row);
+                    return null;
+                }
+            }).filter(row => row !== null);
+            drawChart(originalData);
+        },
+        error: function (error) {
+            console.error("❌ Klaida įkeliant duomenis:", error);
+        }
+    });
 }
