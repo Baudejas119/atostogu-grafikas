@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("error-message").classList.add("hidden");
+
+  // Įkeliame Google Charts
+  google.charts.load("current", { packages: ["timeline"], language: "lt" });
 });
 
 function checkLogin() {
@@ -20,6 +23,9 @@ function checkLogin() {
   if (allowedUsers.includes(input)) {
     document.getElementById("login-container").classList.add("hidden");
     document.getElementById("main-content").classList.remove("hidden");
+
+    // Užkrauname duomenis ir grafiką po sėkmingo prisijungimo
+    google.charts.setOnLoadCallback(loadData);
   } else {
     document.getElementById("error-message").classList.remove("hidden");
   }
