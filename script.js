@@ -40,7 +40,7 @@ function loadData() {
                     return null;
                 }
             }).filter(row => row !== null);
-            window.drawChart(window.originalData);
+            drawChart(window.originalData);
         },
         error: function (error) {
             console.error("❌ Klaida įkeliant duomenis:", error);
