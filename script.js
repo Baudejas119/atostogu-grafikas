@@ -2,31 +2,52 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Puslapis užkrautas.");
 });
 
+// Google Sheets nuorodos kiekvienam skyriui
+window.sectionUrls = {
+  PTDS: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=0&output=csv",
+  PDS: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1629487051&output=csv",
+  Krizes: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1394934574&output=csv",
+  Poumis: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1919414918&output=csv",
+  Geronto: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=817893722&output=csv",
+  UmusII: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=780455392&output=csv",
+  UmusIII: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1192833202&output=csv"
+};
+
 function loadData() {
     console.log("🔄 Kviečiama loadData()...");
+    const section = document.getElementById("section-select").value;
+    const url = window.sectionUrls[section];
 
-    // PAKEISK ŠĮ URL SU TIKRUOJU TAVO JSON NUORODA!
-    const url = "https://raw.githubusercontent.com/vartotojas119/atostogu-grafikas/main/data.json";
+    if (!url) {
+        console.error("⚠️ Nėra duomenų šiam skyriui.");
+        return;
+    }
 
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("⚠️ Nepavyko pasiekti JSON failo");
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("✅ Duomenys įkelti!", data);
-            const formattedData = data.map(row => [
-                row.darbuotojas,
-                new Date(row.pradzia),
-                new Date(row.pabaiga)
-            ]);
+    Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: function (results) {
+            console.log("✅ Duomenys įkelti!", results.data);
+
+            const formattedData = results.data.map(row => {
+                if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
+                    return [
+                        row["Darbuotojas"],
+                        new Date(row["Pradžia"]),
+                        new Date(row["Pabaiga"])
+                    ];
+                } else {
+                    console.warn("⚠️ Praleistas įrašas dėl trūkstamų duomenų:", row);
+                    return null;
+                }
+            }).filter(row => row !== null);
+
             drawChart(formattedData);
-        })
-        .catch(error => {
+        },
+        error: function (error) {
             console.error("❌ Klaida įkeliant duomenis:", error);
-        });
+        }
+    });
 }
 
 function checkLogin() {
