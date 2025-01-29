@@ -28,8 +28,7 @@ function loadData() {
         header: true,
         complete: function (results) {
             console.log("✅ Duomenys įkelti!", results.data);
-
-            const formattedData = results.data.map(row => {
+            window.originalData = results.data.map(row => {
                 if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
                     return [
                         row["Darbuotojas"],
@@ -41,8 +40,7 @@ function loadData() {
                     return null;
                 }
             }).filter(row => row !== null);
-
-            drawChart(formattedData);
+            drawChart(window.originalData);
         },
         error: function (error) {
             console.error("❌ Klaida įkeliant duomenis:", error);
@@ -92,4 +90,28 @@ function drawChart(data) {
     };
 
     chart.draw(dataTable, options);
+}
+
+function filterByMonth(month) {
+    let filteredData;
+    let monthStart, monthEnd;
+
+    if (month === 'all') {
+        filteredData = window.originalData;
+    } else {
+        const year = new Date().getFullYear();
+        monthStart = new Date(year, month, 1);
+        monthEnd = new Date(year, month + 1, 0);
+
+        filteredData = window.originalData.filter(row => {
+            const start = row[1];
+            const end = row[2];
+            return (
+                (start >= monthStart && start <= monthEnd) ||
+                (end >= monthStart && end <= monthEnd) ||
+                (start <= monthStart && end >= monthEnd)
+            );
+        });
+    }
+    drawChart(filteredData);
 }
