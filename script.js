@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Puslapis užkrautas.");
 
-  // Vartotojų sąrašas
+  // Vartotojų sąrašas dabar tikrai globalus
   window.allowedUsers = [
     "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
     "inegol", "eglkav", "edilen", "marmel", "enrrag", "karsra", "ugnand",
@@ -21,12 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Prisijungimo tikrinimas
 function checkLogin() {
+  console.log("🟡 Vykdoma checkLogin() funkcija...");
+  
   const input = document.getElementById("user-input").value.trim().toLowerCase();
   console.log("🟡 Tikrinami inicialai:", input);
-
+  
   if (window.allowedUsers.includes(input)) {
     console.log("✅ Prisijungimas sėkmingas!");
-
+    
     document.getElementById("login-container").classList.add("hidden");
     document.getElementById("main-content").classList.remove("hidden");
 
