@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Puslapis užkrautas.");
 
-  // ✅ Užtikriname, kad vartotojai matomi globaliai
   window.allowedUsers = [
     "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
     "inegol", "eglkav", "edilen", "marmel", "enrrag", "karsra", "ugnand",
@@ -16,37 +15,54 @@ function loadData() {
     console.log("🔄 Kviečiama loadData()...");
     const section = document.getElementById("section-select").value;
 
-    // Jei nėra sekcijos duomenų, išmetame klaidą
+    // Patikriname, ar sectionUrls yra apibrėžtas
     if (!window.sectionUrls || !window.sectionUrls[section]) {
         console.error("⚠️ Nepavyko rasti duomenų šaltinio.");
+        alert("Nepavyko rasti duomenų šaltinio. Patikrinkite, ar Google Sheets nuoroda teisinga.");
         return;
     }
 
     const url = window.sectionUrls[section];
 
-    Papa.parse(url, {
-        download: true,
-        header: true,
-        complete: function (results) {
-            console.log("✅ Duomenys įkelti!");
-            window.originalData = results.data.map(row => {
-                if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
-                    return [
-                        row["Darbuotojas"],
-                        new Date(row["Pradžia"]),
-                        new Date(row["Pabaiga"])
-                    ];
-                } else {
-                    console.warn("⚠️ Praleistas įrašas dėl trūkstamų duomenų:", row);
-                    return null;
+    // ✅ Pridedame testavimą, ar Google Sheets URL egzistuoja
+    fetch(url, { method: 'HEAD' })
+        .then(response => {
+            if (!response.ok) {
+                console.error(`⚠️ Google Sheets URL neveikia: ${url}`);
+                alert("Google Sheets URL neveikia! Patikrinkite, ar failas yra viešas ir ar nuoroda teisinga.");
+                return;
+            }
+            
+            // Jei URL veikia, pradedame duomenų parsisiuntimą
+            console.log(`✅ Google Sheets pasiekiamas: ${url}`);
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                complete: function (results) {
+                    console.log("✅ Duomenys įkelti!");
+                    window.originalData = results.data.map(row => {
+                        if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
+                            return [
+                                row["Darbuotojas"],
+                                new Date(row["Pradžia"]),
+                                new Date(row["Pabaiga"])
+                            ];
+                        } else {
+                            console.warn("⚠️ Praleistas įrašas dėl trūkstamų duomenų:", row);
+                            return null;
+                        }
+                    }).filter(row => row !== null);
+                    drawChart(window.originalData);
+                },
+                error: function (error) {
+                    console.error("❌ Klaida įkeliant duomenis:", error);
                 }
-            }).filter(row => row !== null);
-            drawChart(window.originalData);
-        },
-        error: function (error) {
-            console.error("❌ Klaida įkeliant duomenis:", error);
-        }
-    });
+            });
+        })
+        .catch(error => {
+            console.error(`❌ Nepavyko pasiekti Google Sheets: ${error}`);
+            alert("Nepavyko pasiekti Google Sheets. Patikrinkite savo interneto ryšį arba failo prieigos nustatymus.");
+        });
 }
 
 // ✅ Užtikriname, kad prisijungimo funkcija gali pasiekti loadData()
@@ -73,11 +89,11 @@ function checkLogin() {
 
 // ✅ Užtikriname, kad `sectionUrls` yra globalus objektas
 window.sectionUrls = {
-  PTDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  PDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  Krizes: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  Poumis: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  Geronto: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  UmusII: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  UmusIII: "https://docs.google.com/spreadsheets/d/e/.../output=csv"
+  PTDS: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv",
+  PDS: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv",
+  Krizes: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv",
+  Poumis: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv",
+  Geronto: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv",
+  UmusII: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv",
+  UmusIII: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?output=csv"
 };
