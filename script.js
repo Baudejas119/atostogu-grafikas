@@ -1,5 +1,9 @@
+// Patikriname, ar dokumentas pilnai užkrautas
 document.addEventListener("DOMContentLoaded", () => {
-  const allowedUsers = [
+  console.log("Puslapis užkrautas.");
+
+  // Vartotojų sąrašas
+  window.allowedUsers = [
     "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
     "inegol", "eglkav", "edilen", "marmel", "enrrag", "karsra", "ugnand",
     "emirus", "valser", "raisim", "rashag", "rasjau", "ilmnor", "greval",
@@ -15,7 +19,25 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("error-message").classList.add("hidden");
 });
 
-// Pridėta: duomenų šaltinių URL
+// Prisijungimo tikrinimas
+function checkLogin() {
+  const input = document.getElementById("user-input").value.trim().toLowerCase();
+  console.log("Tikrinami inicialai:", input);
+
+  if (window.allowedUsers.includes(input)) {
+    document.getElementById("login-container").classList.add("hidden");
+    document.getElementById("main-content").classList.remove("hidden");
+
+    console.log("Vartotojas patvirtintas, įkeliami duomenys...");
+    google.charts.load("current", { packages: ["timeline"], language: "lt" });
+    google.charts.setOnLoadCallback(loadData);
+  } else {
+    document.getElementById("error-message").classList.remove("hidden");
+    console.warn("Neteisingi inicialai.");
+  }
+}
+
+// URL sąrašas (būtinai reikia!)
 const sectionUrls = {
   PTDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
   PDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
@@ -26,19 +48,7 @@ const sectionUrls = {
   UmusIII: "https://docs.google.com/spreadsheets/d/e/.../output=csv"
 };
 
-function checkLogin() {
-  const input = document.getElementById("user-input").value.trim().toLowerCase();
-  if (allowedUsers.includes(input)) {
-    document.getElementById("login-container").classList.add("hidden");
-    document.getElementById("main-content").classList.remove("hidden");
-
-    google.charts.load("current", { packages: ["timeline"], language: "lt" });
-    google.charts.setOnLoadCallback(loadData);
-  } else {
-    document.getElementById("error-message").classList.remove("hidden");
-  }
-}
-
+// Duomenų užkrovimo funkcija
 function loadData() {
   console.log("loadData() kviečiama...");
   const section = document.getElementById("section-select").value;
