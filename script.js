@@ -10,27 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("📌 Vartotojų inicialai:", window.allowedUsers);
 });
 
-function checkLogin() {
-  console.log("🟡 Vykdoma checkLogin() funkcija...");
-  
-  const input = document.getElementById("user-input").value.trim().toLowerCase();
-  console.log("🟡 Tikrinami inicialai:", input);
-  
-  if (window.allowedUsers.includes(input)) {
-    console.log("✅ Prisijungimas sėkmingas!");
-    
-    document.getElementById("login-container").classList.add("hidden");
-    document.getElementById("main-content").classList.remove("hidden");
-
-    google.charts.load("current", { packages: ["timeline"], language: "lt" });
-    google.charts.setOnLoadCallback(loadData);
-  } else {
-    console.warn("❌ Neteisingi inicialai.");
-    document.getElementById("error-message").classList.remove("hidden");
-  }
-}
-
-// ✅ Pridėta loadData() funkcija
+// ✅ Užtikriname, kad loadData() būtų globali funkcija
 function loadData() {
     console.log("🔄 Kviečiama loadData()...");
     const section = document.getElementById("section-select").value;
@@ -63,4 +43,25 @@ function loadData() {
             console.error("❌ Klaida įkeliant duomenis:", error);
         }
     });
+}
+
+// ✅ Patikriname, ar checkLogin() kviečia loadData() teisingai
+function checkLogin() {
+  console.log("🟡 Vykdoma checkLogin() funkcija...");
+  
+  const input = document.getElementById("user-input").value.trim().toLowerCase();
+  console.log("🟡 Tikrinami inicialai:", input);
+  
+  if (window.allowedUsers.includes(input)) {
+    console.log("✅ Prisijungimas sėkmingas!");
+    
+    document.getElementById("login-container").classList.add("hidden");
+    document.getElementById("main-content").classList.remove("hidden");
+
+    google.charts.load("current", { packages: ["timeline"], language: "lt" });
+    google.charts.setOnLoadCallback(loadData);
+  } else {
+    console.warn("❌ Neteisingi inicialai.");
+    document.getElementById("error-message").classList.remove("hidden");
+  }
 }
