@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Google Sheets nuorodos kiekvienam skyriui
 window.sectionUrls = {
-  PTDS: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=0&output=csv",
-  PDS: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1629487051&output=csv",
-  Krizes: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1394934574&output=csv",
-  Poumis: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1919414918&output=csv",
-  Geronto: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=817893722&output=csv",
-  UmusII: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=780455392&output=csv",
-  UmusIII: "https://docs.google.com/spreadsheets/d/e/YOUR_SPREADSHEET_ID/pub?gid=1192833202&output=csv"
+  PTDS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=0&output=csv",
+  PDS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1629487051&output=csv",
+  Krizes: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1394934574&output=csv",
+  Poumis: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1919414918&output=csv",
+  Geronto: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=817893722&output=csv",
+  UmusII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=780455392&output=csv",
+  UmusIII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&output=csv"
 };
 
 function loadData() {
