@@ -15,13 +15,23 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("error-message").classList.add("hidden");
 });
 
+// Pridėta: duomenų šaltinių URL
+const sectionUrls = {
+  PTDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
+  PDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
+  Krizes: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
+  Poumis: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
+  Geronto: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
+  UmusII: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
+  UmusIII: "https://docs.google.com/spreadsheets/d/e/.../output=csv"
+};
+
 function checkLogin() {
   const input = document.getElementById("user-input").value.trim().toLowerCase();
   if (allowedUsers.includes(input)) {
     document.getElementById("login-container").classList.add("hidden");
     document.getElementById("main-content").classList.remove("hidden");
 
-    // Tik po prisijungimo užkrauname Google Charts
     google.charts.load("current", { packages: ["timeline"], language: "lt" });
     google.charts.setOnLoadCallback(loadData);
   } else {
@@ -60,70 +70,4 @@ function loadData() {
       console.error("Klaida įkeliant duomenis:", error);
     }
   });
-}
-
-function filterByMonth(month) {
-  if (!originalData) {
-    console.warn("Duomenys dar neįkelti.");
-    return;
-  }
-  
-  console.log("Filtruojamas mėnuo:", month);
-  let filteredData;
-  let monthStart, monthEnd;
-
-  if (month === 'all') {
-    filteredData = originalData;
-    monthStart = new Date(new Date().getFullYear(), 0, 1);
-    monthEnd = new Date(new Date().getFullYear(), 11, 31);
-  } else {
-    const year = new Date().getFullYear();
-    monthStart = new Date(year, month, 1);
-    monthEnd = new Date(year, month + 1, 0);
-    filteredData = originalData.filter(row => {
-      const start = row[1];
-      const end = row[2];
-      return (
-        (start >= monthStart && start <= monthEnd) ||
-        (end >= monthStart && end <= monthEnd) ||
-        (start <= monthStart && end >= monthEnd)
-      );
-    });
-  }
-
-  drawChart(filteredData, monthStart, monthEnd);
-}
-
-function drawChart(data, monthStart, monthEnd) {
-  if (!data || data.length === 0) {
-    console.warn("Nėra duomenų grafikui atvaizduoti.");
-    return;
-  }
-
-  const container = document.getElementById('timeline');
-  if (!container) {
-    console.error("Nepavyko rasti grafiko konteinerio.");
-    return;
-  }
-
-  const chart = new google.visualization.Timeline(container);
-  const dataTable = new google.visualization.DataTable();
-
-  dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
-  dataTable.addColumn({ type: 'date', id: 'Pradžia' });
-  dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-
-  data.forEach(row => dataTable.addRow(row));
-
-  const options = {
-    timeline: { groupByRowLabel: true },
-    height: Math.max(data.length * 50, 400),
-    width: '100%',
-    hAxis: {
-      minValue: monthStart,
-      maxValue: monthEnd,
-    }
-  };
-
-  chart.draw(dataTable, options);
 }
