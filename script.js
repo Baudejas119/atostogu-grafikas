@@ -40,7 +40,7 @@ function loadData() {
                     return null;
                 }
             }).filter(row => row !== null);
-            drawChart(window.originalData);
+            window.drawChart(window.originalData);
         },
         error: function (error) {
             console.error("❌ Klaida įkeliant duomenis:", error);
@@ -70,6 +70,29 @@ window.allowedUsers = ["arivag", "marzur", "dailub", "zilkun"];
 google.charts.load('current', { packages: ['timeline'] });
 google.charts.setOnLoadCallback(() => loadData());
 
+function drawChart(data) {
+    console.log("📊 Braižomas grafikas su duomenimis:", data);
+    
+    const container = document.getElementById("timeline");
+    const chart = new google.visualization.Timeline(container);
+    const dataTable = new google.visualization.DataTable();
+    
+    dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
+    dataTable.addColumn({ type: 'date', id: 'Pradžia' });
+    dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+
+    data.forEach(row => dataTable.addRow(row));
+
+    const options = {
+        timeline: { groupByRowLabel: true },
+        height: Math.max(data.length * 50, 400),
+        width: '100%'
+    };
+
+    chart.draw(dataTable, options);
+}
+window.drawChart = drawChart;
+
 function filterByMonth(month) {
     let filteredData;
     let monthStart, monthEnd;
@@ -93,6 +116,4 @@ function filterByMonth(month) {
     }
     drawChart(filteredData);
 }
-
-// Užtikriname, kad filterByMonth būtų prieinama HTML mygtukams
 window.filterByMonth = filterByMonth;
