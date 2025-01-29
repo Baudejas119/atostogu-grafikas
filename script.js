@@ -80,8 +80,14 @@ function drawChart(data) {
     dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
     dataTable.addColumn({ type: 'date', id: 'Pradžia' });
     dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
+    dataTable.addColumn({ type: 'string', role: 'tooltip' });
 
-    data.forEach(row => dataTable.addRow(row));
+    data.forEach(row => {
+        const start = row[1];
+        const end = row[2];
+        const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        dataTable.addRow([...row, `${row[0]}: ${days} dienos`]);
+    });
 
     const options = {
         timeline: { groupByRowLabel: true },
@@ -90,28 +96,4 @@ function drawChart(data) {
     };
 
     chart.draw(dataTable, options);
-}
-
-function filterByMonth(month) {
-    let filteredData;
-    let monthStart, monthEnd;
-
-    if (month === 'all') {
-        filteredData = window.originalData;
-    } else {
-        const year = new Date().getFullYear();
-        monthStart = new Date(year, month, 1);
-        monthEnd = new Date(year, month + 1, 0);
-
-        filteredData = window.originalData.filter(row => {
-            const start = row[1];
-            const end = row[2];
-            return (
-                (start >= monthStart && start <= monthEnd) ||
-                (end >= monthStart && end <= monthEnd) ||
-                (start <= monthStart && end >= monthEnd)
-            );
-        });
-    }
-    drawChart(filteredData);
 }
