@@ -1,6 +1,5 @@
-// Patikriname, ar dokumentas pilnai užkrautas
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Puslapis užkrautas.");
+  console.log("✅ Puslapis užkrautas.");
 
   // Vartotojų sąrašas
   window.allowedUsers = [
@@ -9,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "emirus", "valser", "raisim", "rashag", "rasjau", "ilmnor", "greval",
     "simles", "kribos", "anggel", "jurbel", "virrut", "vaizar"
   ];
+  console.log("📌 Vartotojų inicialai:", window.allowedUsers);
 
   document.getElementById("user-input").addEventListener("keypress", function (event) {
     if (event.key === "Enter") {
@@ -22,62 +22,18 @@ document.addEventListener("DOMContentLoaded", () => {
 // Prisijungimo tikrinimas
 function checkLogin() {
   const input = document.getElementById("user-input").value.trim().toLowerCase();
-  console.log("Tikrinami inicialai:", input);
+  console.log("🟡 Tikrinami inicialai:", input);
 
   if (window.allowedUsers.includes(input)) {
+    console.log("✅ Prisijungimas sėkmingas!");
+
     document.getElementById("login-container").classList.add("hidden");
     document.getElementById("main-content").classList.remove("hidden");
 
-    console.log("Vartotojas patvirtintas, įkeliami duomenys...");
     google.charts.load("current", { packages: ["timeline"], language: "lt" });
     google.charts.setOnLoadCallback(loadData);
   } else {
+    console.warn("❌ Neteisingi inicialai.");
     document.getElementById("error-message").classList.remove("hidden");
-    console.warn("Neteisingi inicialai.");
   }
-}
-
-// URL sąrašas (būtinai reikia!)
-const sectionUrls = {
-  PTDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  PDS: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  Krizes: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  Poumis: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  Geronto: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  UmusII: "https://docs.google.com/spreadsheets/d/e/.../output=csv",
-  UmusIII: "https://docs.google.com/spreadsheets/d/e/.../output=csv"
-};
-
-// Duomenų užkrovimo funkcija
-function loadData() {
-  console.log("loadData() kviečiama...");
-  const section = document.getElementById("section-select").value;
-  if (!sectionUrls[section]) {
-    console.error("Nepavyko rasti duomenų šaltinio.");
-    return;
-  }
-  const url = sectionUrls[section];
-
-  Papa.parse(url, {
-    download: true,
-    header: true,
-    complete: function (results) {
-      originalData = results.data.map(row => {
-        if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
-          return [
-            row["Darbuotojas"],
-            new Date(row["Pradžia"]),
-            new Date(row["Pabaiga"])
-          ];
-        } else {
-          console.warn("Praleistas įrašas dėl trūkstamų duomenų:", row);
-          return null;
-        }
-      }).filter(row => row !== null);
-      drawChart(originalData);
-    },
-    error: function (error) {
-      console.error("Klaida įkeliant duomenis:", error);
-    }
-  });
 }
