@@ -32,6 +32,7 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 4px;
     margin-top: 10px;
+    margin-bottom: 15px;
 }
 
 button {
@@ -50,11 +51,16 @@ button:hover {
     background-color: #0056b3;
 }
 
-/* Klaidos pranešimas */
+/* Klaidos pranešimas su animacija */
 #error-message {
     color: red;
     font-weight: bold;
-    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+#error-message.show {
+    opacity: 1;
 }
 
 .hidden {
@@ -107,5 +113,13 @@ button:hover, select:hover {
     }
     select, button {
         width: 90%;
+    }
+}
+
+/* Labai maži ekranai */
+@media (max-width: 400px) {
+    select, button {
+        font-size: 14px;
+        padding: 8px;
     }
 }
