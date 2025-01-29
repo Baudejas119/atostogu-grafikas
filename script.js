@@ -1,5 +1,3 @@
-// script.js
-
 document.addEventListener("DOMContentLoaded", () => {
   const allowedUsers = [
     "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
@@ -15,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("error-message").classList.add("hidden");
-  google.charts.load("current", { packages: ["timeline"], language: "lt" });
 });
 
 function checkLogin() {
@@ -23,6 +20,9 @@ function checkLogin() {
   if (allowedUsers.includes(input)) {
     document.getElementById("login-container").classList.add("hidden");
     document.getElementById("main-content").classList.remove("hidden");
+
+    // Tik po prisijungimo užkrauname Google Charts
+    google.charts.load("current", { packages: ["timeline"], language: "lt" });
     google.charts.setOnLoadCallback(loadData);
   } else {
     document.getElementById("error-message").classList.remove("hidden");
@@ -32,6 +32,10 @@ function checkLogin() {
 function loadData() {
   console.log("loadData() kviečiama...");
   const section = document.getElementById("section-select").value;
+  if (!sectionUrls[section]) {
+    console.error("Nepavyko rasti duomenų šaltinio.");
+    return;
+  }
   const url = sectionUrls[section];
 
   Papa.parse(url, {
@@ -59,6 +63,11 @@ function loadData() {
 }
 
 function filterByMonth(month) {
+  if (!originalData) {
+    console.warn("Duomenys dar neįkelti.");
+    return;
+  }
+  
   console.log("Filtruojamas mėnuo:", month);
   let filteredData;
   let monthStart, monthEnd;
@@ -86,7 +95,17 @@ function filterByMonth(month) {
 }
 
 function drawChart(data, monthStart, monthEnd) {
+  if (!data || data.length === 0) {
+    console.warn("Nėra duomenų grafikui atvaizduoti.");
+    return;
+  }
+
   const container = document.getElementById('timeline');
+  if (!container) {
+    console.error("Nepavyko rasti grafiko konteinerio.");
+    return;
+  }
+
   const chart = new google.visualization.Timeline(container);
   const dataTable = new google.visualization.DataTable();
 
