@@ -49,23 +49,5 @@
       <div id="timeline"></div>
     </div>
   </div>
-  <script>
-    const allowedUsers = [
-      "arivag", "marzur", "dailub", "zilkun", "svebli", "inebun", "astbuk",
-      "inegol", "eglkav", "edilen", "marmel", "enrrag", "karsra", "ugnand",
-      "emirus", "valser", "raisim", "rashag", "rasjau", "ilmnor", "greval",
-      "simles", "kribos", "anggel", "jurbel", "virrut", "vaizar"
-    ];
-
-    function checkLogin() {
-      const input = document.getElementById("user-input").value.trim().toLowerCase();
-      if (allowedUsers.includes(input)) {
-        document.getElementById("login-container").classList.add("hidden");
-        document.getElementById("main-content").classList.remove("hidden");
-      } else {
-        document.getElementById("error-message").classList.remove("hidden");
-      }
-    }
-  </script>
 </body>
 </html>
