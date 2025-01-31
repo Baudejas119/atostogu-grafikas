@@ -85,7 +85,9 @@ function drawChart(data) {
     const options = {
         timeline: { groupByRowLabel: true },
         height: Math.max(data.length * 50, 400),
-        width: '100%'
+        width: '100%',
+        minWidth: 1200, // Minimalus grafiko plotis
+        avoidOverlappingGridLines: false
     };
 
     chart.draw(dataTable, options);
