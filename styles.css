@@ -83,14 +83,15 @@ button:hover {
 #timeline {
     width: 100%;
     max-width: 1600px;
-    min-width: 1200px; /* Neleisti, kad būtų per siauras */
+    min-width: 1200px;
+    height: 500px; /* 🔹 Fiksuotas aukštis, kad grafikas nesiplėstų */
     background-color: white;
     border: 1px solid #dcdcdc;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin: 20px 0 10px 0;
-    overflow-x: auto; /* Leidžiame slinkti, jei reikia */
+    overflow-x: auto; /* 🔹 Leidžiama slinktis, bet puslapis neplečiamas */
 }
 
 /* Select ir Button dizainas */
