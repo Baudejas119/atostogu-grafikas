@@ -1,5 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ Puslapis užkrautas.");
+
+    // Enter klavišo palaikymas prisijungimo laukelyje
+    document.getElementById("user-input").addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            checkLogin();
+        }
+    });
 });
 
 // Google Sheets nuorodos kiekvienam skyriui
@@ -13,7 +20,6 @@ window.sectionUrls = {
     UmusIII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&output=csv"
 };
 
-// ✅ Prisijungimo funkcija
 window.checkLogin = function checkLogin() {
     console.log("🟡 Vykdoma checkLogin() funkcija...");
     document.getElementById("login-container").classList.add("hidden");
@@ -23,13 +29,10 @@ window.checkLogin = function checkLogin() {
     google.charts.setOnLoadCallback(() => loadData());
 };
 
-// ✅ Duomenų įkėlimo funkcija
 window.loadData = function loadData() {
     console.log("🔄 Kviečiama loadData()...");
     const section = document.getElementById("section-select").value;
     const url = window.sectionUrls[section];
-
-    console.log("🔗 Pasirinkto skyriaus URL:", url);
 
     if (!url) {
         console.error("⚠️ Nėra duomenų šiam skyriui.");
@@ -40,45 +43,24 @@ window.loadData = function loadData() {
         download: true,
         header: true,
         complete: function (results) {
-            console.log("✅ Duomenys įkelti!", results.data);
-            window.originalData = results.data.map(row => {
-                if (row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"]) {
-                    return [row["Darbuotojas"], new Date(row["Pradžia"]), new Date(row["Pabaiga"])];
-                } else {
-                    return null;
-                }
-            }).filter(row => row !== null);
-
+            window.originalData = results.data.map(row => row["Darbuotojas"] && row["Pradžia"] && row["Pabaiga"] ? [row["Darbuotojas"], new Date(row["Pradžia"]), new Date(row["Pabaiga"])] : null).filter(row => row);
             google.charts.setOnLoadCallback(() => drawChart(window.originalData));
-        },
-        error: function (error) {
-            console.error("❌ Klaida įkeliant duomenis:", error);
         }
     });
 };
 
-// ✅ Grafiko braižymo funkcija
+window.filterByMonth = function filterByMonth(month) {
+    const year = new Date().getFullYear();
+    const filteredData = month === 'all' ? window.originalData : window.originalData.filter(row => (row[1].getMonth() == month || row[2].getMonth() == month));
+    drawChart(filteredData);
+};
+
 window.drawChart = function drawChart(data) {
-    console.log("📊 Braižomas grafikas su duomenimis:", data);
-    const container = document.getElementById("timeline");
-    container.innerHTML = "";
-
-    const chart = new google.visualization.Timeline(container);
+    const chart = new google.visualization.Timeline(document.getElementById("timeline"));
     const dataTable = new google.visualization.DataTable();
-
     dataTable.addColumn({ type: 'string', id: 'Darbuotojas' });
     dataTable.addColumn({ type: 'date', id: 'Pradžia' });
     dataTable.addColumn({ type: 'date', id: 'Pabaiga' });
-
     data.forEach(row => dataTable.addRow(row));
-
-    const options = {
-        timeline: { groupByRowLabel: true },
-        height: 500,
-        width: '100%',
-        minWidth: 1200,
-        avoidOverlappingGridLines: false
-    };
-
-    chart.draw(dataTable, options);
+    chart.draw(dataTable, { timeline: { groupByRowLabel: true }, height: 500, width: '100%' });
 };
