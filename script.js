@@ -36,7 +36,8 @@ function loadData() {
                     return null;
                 }
             }).filter(row => row !== null);
-            drawChart(window.originalData);
+            
+            google.charts.setOnLoadCallback(() => drawChart(window.originalData));
         },
         error: function (error) {
             console.error("❌ Klaida įkeliant duomenis:", error);
@@ -63,10 +64,12 @@ function checkLogin() {
 
 window.allowedUsers = ["arivag", "marzur", "dailub", "zilkun"];
 
-google.charts.load('current', { packages: ['timeline'] });
-google.charts.setOnLoadCallback(() => loadData());
-
 function drawChart(data) {
+    if (!google.visualization) {
+        console.error("⚠️ Google Charts neįkeltas.");
+        return;
+    }
+
     console.log("📊 Braižomas grafikas su duomenimis:", data);
     
     const container = document.getElementById("timeline");
@@ -87,4 +90,3 @@ function drawChart(data) {
 
     chart.draw(dataTable, options);
 }
-window.drawChart = drawChart;
