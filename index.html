@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Atostogų Grafikas</title>
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Google Charts -->
     <script src="https://www.gstatic.com/charts/loader.js"></script>
 
-    <!-- PapaParse -->
+    <!-- PapaParse (CSV duomenų skaitymui) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
@@ -25,8 +24,9 @@
 
     <!-- Turinio sekcija -->
     <div id="main-content" class="hidden">
+        <label for="section-select">Pasirinkite skyrių:</label>
         <select id="section-select" onchange="loadData()">
-            <option value="">Pasirinkite skyrių</option>
+            <option value="">-- Pasirinkite skyrių --</option>
             <option value="PTDS">PTDS</option>
             <option value="PDS">PDS</option>
             <option value="Krizes">Krizes</option>
@@ -35,10 +35,10 @@
             <option value="UmusII">Umus II</option>
             <option value="UmusIII">Umus III</option>
         </select>
+
         <div id="timeline"></div>
     </div>
 
-    <!-- Svarbu: Pagrindinis script failas turi būti **pabaigoje** -->
     <script src="script.js"></script>
 </body>
 </html>
