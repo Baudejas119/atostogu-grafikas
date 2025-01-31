@@ -17,8 +17,8 @@
 
     <!-- Prisijungimo sekcija -->
     <div id="login-container">
-        <p><strong>Įveskite pirmąsias savo vardo ir pavardės raides:</strong></p>
-        <input type="text" id="user-input" placeholder="Pvz.: jodo (Jonas Dobilas)">
+        <p><strong>Įveskite pirmas tris savo vardo ir pavardės raides:</strong></p>
+        <input type="text" id="user-input" placeholder="Pvz.: jonpet (Jonas Petraitis)">
         <button onclick="checkLogin()">Prisijungti</button>
         <p id="error-message" class="hidden">Neteisingi inicialai</p>
     </div>
@@ -35,6 +35,23 @@
             <option value="Geronto">Geronto</option>
             <option value="UmusII">Umus II</option>
             <option value="UmusIII">Umus III</option>
+        </select>
+
+        <label for="month-select">Pasirinkite mėnesį:</label>
+        <select id="month-select" onchange="filterByMonth(this.value)">
+            <option value="all">Visi mėnesiai</option>
+            <option value="0">Sausis</option>
+            <option value="1">Vasaris</option>
+            <option value="2">Kovas</option>
+            <option value="3">Balandis</option>
+            <option value="4">Gegužė</option>
+            <option value="5">Birželis</option>
+            <option value="6">Liepa</option>
+            <option value="7">Rugpjūtis</option>
+            <option value="8">Rugsėjis</option>
+            <option value="9">Spalis</option>
+            <option value="10">Lapkritis</option>
+            <option value="11">Gruodis</option>
         </select>
 
         <div id="timeline"></div>
