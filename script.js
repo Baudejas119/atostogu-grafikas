@@ -13,6 +13,7 @@ window.sectionUrls = {
     UmusIII: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRRaaILMyXpOFmATf6QC7JnJVYwRPKOjXZkL8jOgMeZI64aulzlnk7f-cbpNmog90kmLefeLN3E3tiT/pub?gid=1192833202&output=csv"
 };
 
+// ✅ Prisijungimo funkcija
 window.checkLogin = function checkLogin() {
     console.log("🟡 Vykdoma checkLogin() funkcija...");
     document.getElementById("login-container").classList.add("hidden");
@@ -22,6 +23,7 @@ window.checkLogin = function checkLogin() {
     google.charts.setOnLoadCallback(() => loadData());
 };
 
+// ✅ Duomenų įkėlimo funkcija
 window.loadData = function loadData() {
     console.log("🔄 Kviečiama loadData()...");
     const section = document.getElementById("section-select").value;
@@ -55,6 +57,7 @@ window.loadData = function loadData() {
     });
 };
 
+// ✅ Grafiko braižymo funkcija
 window.drawChart = function drawChart(data) {
     console.log("📊 Braižomas grafikas su duomenimis:", data);
     const container = document.getElementById("timeline");
